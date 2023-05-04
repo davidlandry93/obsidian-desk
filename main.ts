@@ -1,4 +1,7 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, Vault } from 'obsidian';
+
+import { DeskView, VIEW_TYPE_DESK } from 'deskview';
+import { ExtendedMetadataCache } from 'ExtendedObsidian';
 
 // Remember to rename these classes and interfaces!
 
@@ -17,9 +20,10 @@ export default class MyPlugin extends Plugin {
 		await this.loadSettings();
 
 		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
+		const ribbonIconEl = this.addRibbonIcon('dice', 'Desk View', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
+			this.activateView();
+			new Notice("Notice text")
 		});
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass('my-plugin-ribbon-class');
@@ -76,10 +80,12 @@ export default class MyPlugin extends Plugin {
 
 		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
 		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
+
+		this.registerView(VIEW_TYPE_DESK, (leaf) => { return new DeskView(leaf, this.app.vault, this.app.metadataCache as ExtendedMetadataCache)});
 	}
 
 	onunload() {
-
+		this.app.workspace.detachLeavesOfType(VIEW_TYPE_DESK)
 	}
 
 	async loadSettings() {
@@ -88,6 +94,20 @@ export default class MyPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+	async activateView() {
+		console.log("Activating view")
+		this.app.workspace.detachLeavesOfType(VIEW_TYPE_DESK);
+
+		await this.app.workspace.getLeaf(true).setViewState({
+			type: VIEW_TYPE_DESK,
+			active: true,
+		});
+	
+		this.app.workspace.revealLeaf(
+			this.app.workspace.getLeavesOfType(VIEW_TYPE_DESK)[0]
+		);
 	}
 }
 
