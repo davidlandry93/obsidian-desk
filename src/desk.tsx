@@ -10,6 +10,7 @@ import { produce } from 'immer'
 interface SearchResult {
   title: string
   key: string
+  body: string
 }
 
 interface ResultsDisplayProps {
@@ -18,7 +19,7 @@ interface ResultsDisplayProps {
 
 function ResultsDisplay(props: ResultsDisplayProps) {
     const resultItems = props.results.map(r => <div className='desk__search-result'>
-        <div className='desk__search-result-title'>
+        <div className='desk__search-result-title' key={r.key}>
             {r.title}
         </div>
     </div>)
@@ -58,15 +59,26 @@ export default class DeskComponent extends React.Component<DeskViewProps> {
     }
 
     getAllSuggestions(): Filter[] {
-        return [...this.getTagSuggestions(), ...this.getLinkSuggestions()]
+        return [...this.getTagSuggestions(), ...this.getLinkSuggestions(), ...this.getFolderSuggestions()]
     }
 
     getTagSuggestions(): Filter[] {
-        return Object.keys(this.props.metadataCache.getTags()).map((t) => {return {type: "tag", value: t}})
+        return Object.keys(this.props.metadataCache.getTags()).map((t) => {return {type: "tag", value: t, key: t}})
+    }
+
+    getFolderSuggestions(): Filter[] {
+        const folderPaths = this.props.vault.getAllLoadedFiles().filter(f => 'children' in f).map(f => f.path)
+        return folderPaths.map((p) => {
+            return {
+                type: 'folder',
+                value: p,
+                key: p,
+            }
+        })
     }
 
     getLinkSuggestions(): Filter[] {
-        return this.props.metadataCache.getLinkSuggestions().map((s) =>{ return {type: "link", value: s.path}})
+        return this.props.metadataCache.getLinkSuggestions().map((s) =>{ return {type: "link", value: s.path, key: s.path}})
     }
 
     render() {
@@ -83,8 +95,10 @@ export default class DeskComponent extends React.Component<DeskViewProps> {
         const dv = app.plugins.plugins.dataview.api
         const dataviewQuery = filtersToDataviewQuery(filters)
 
+        console.log("Running data view query", dataviewQuery)
+
         const pages = dv.pages(dataviewQuery)
-        console.log(pages)
+        console.log("Result", pages)
 
         const newState = produce(this.state, draft => {
             draft.results = pages.map((p: any) => {

@@ -97,7 +97,6 @@ export default class MyPlugin extends Plugin {
 	}
 
 	async activateView() {
-		console.log("Activating view")
 		this.app.workspace.detachLeavesOfType(VIEW_TYPE_DESK);
 
 		await this.app.workspace.getLeaf(true).setViewState({

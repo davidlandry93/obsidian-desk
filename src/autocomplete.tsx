@@ -8,6 +8,10 @@ interface AutocompleteProps {
     onChange: (newFilters: Filter[]) => void
 }
 
+function keyOfFilter(f: Filter) {
+    return f.value
+}
+
 export function AutocompleteSearchBox(props: AutocompleteProps) {
     const [userInput, setUserInput] = useState('')
     const [showSuggestions, setShowSuggestions] = useState(false)
@@ -30,8 +34,6 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
 
         setUserInput('')
         setShowSuggestions(false)
-
-        console.log("selected", f)
     }
 
     function removeChip(index: number) {
@@ -45,7 +47,7 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
     }, [filters])
 
     const suggestionComponents = filteredSuggestions.map((s, index) => { 
-        return <li>
+        return <li key={keyOfFilter(s)}>
             <a 
             className={`desk__suggestion-item ${index === selectedSuggestion ? 'desk__suggestion-item-selected' : ''}`}
             onClick={() => {onSuggestionClick(s)}}
@@ -53,7 +55,9 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
         </li>
     })
 
-    const chips = filters.map((f, i) => <span className="desk__chip" onClick={() => {removeChip(i)}}>{f.value}</span>)
+    const chips = filters.map((f, i) =>{
+        return <span className="desk__chip" onClick={() => {removeChip(i)}} key={keyOfFilter(f)}>{f.value}</span>
+    })
 
     return (
         <div className='desk__autocomplete-search-box-container'>
