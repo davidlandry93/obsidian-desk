@@ -1,8 +1,7 @@
 import * as React from 'react'
+import { TFile } from 'obsidian'
 
 
-import { ExtendedMetadataCache } from 'ExtendedObsidian'
-import { Vault } from 'obsidian'
 import { AutocompleteSearchBox } from './autocomplete'
 import { Filter, filtersToDataviewQuery } from './filter'
 import { produce } from 'immer'
@@ -11,16 +10,27 @@ interface SearchResult {
   title: string
   key: string
   body: string
+  path: string
 }
 
 interface ResultsDisplayProps {
   results: SearchResult[]
 }
 
+function navigateToNote(path: string) {
+    console.log("navigating to node", path)
+    const note = app.vault.getAbstractFileByPath(path)
+    console.log(note)
+    if (note instanceof TFile) {
+        app.workspace.getLeaf('tab').openFile(note)
+    }
+}
+
 function ResultsDisplay(props: ResultsDisplayProps) {
     const resultItems = props.results.map(r => <div className='desk__search-result'>
         <div className='desk__search-result-title' key={r.key}>
-            {r.title}
+            <a onClick={() => {navigateToNote(r.path)}}>{r.title}</a>
+            <a href={r.path}>{r.title}</a>
         </div>
     </div>)
 
@@ -30,28 +40,25 @@ function ResultsDisplay(props: ResultsDisplayProps) {
 }
 
 
-interface DeskViewProps {
-  vault: Vault
-  metadataCache: ExtendedMetadataCache
-}
-
 interface DeskViewState {
     results: SearchResult[]
     suggestions: Filter[]
     filters: Filter[]
 }
 
-export default class DeskComponent extends React.Component<DeskViewProps> {
+export default class DeskComponent extends React.Component {
     state: DeskViewState
 
-    constructor(props: DeskViewProps) {
+    constructor(props: never) {
         super(props)
 
         this.state = {
-            results: this.props.vault.getMarkdownFiles().map((t) => {
+            results: app.vault.getMarkdownFiles().map((t) => {
                 return {
                 key: t.path,
-                title: t.basename
+                title: t.basename,
+                path: t.path,
+                body: ""
             }}),
             filters: [],
             suggestions: this.getAllSuggestions()
@@ -63,11 +70,11 @@ export default class DeskComponent extends React.Component<DeskViewProps> {
     }
 
     getTagSuggestions(): Filter[] {
-        return Object.keys(this.props.metadataCache.getTags()).map((t) => {return {type: "tag", value: t, key: t}})
+        return Object.keys(app.metadataCache.getTags()).map((t) => {return {type: "tag", value: t, key: t}})
     }
 
     getFolderSuggestions(): Filter[] {
-        const folderPaths = this.props.vault.getAllLoadedFiles().filter(f => 'children' in f).map(f => f.path)
+        const folderPaths = app.vault.getAllLoadedFiles().filter(f => 'children' in f).map(f => f.path)
         return folderPaths.map((p) => {
             return {
                 type: 'folder',
@@ -78,7 +85,7 @@ export default class DeskComponent extends React.Component<DeskViewProps> {
     }
 
     getLinkSuggestions(): Filter[] {
-        return this.props.metadataCache.getLinkSuggestions().map((s) =>{ return {type: "link", value: s.path, key: s.path}})
+        return app.metadataCache.getLinkSuggestions().map((s) =>{ return {type: "link", value: s.path, key: s.path}})
     }
 
     render() {
@@ -104,7 +111,9 @@ export default class DeskComponent extends React.Component<DeskViewProps> {
             draft.results = pages.map((p: any) => {
                 return {
                     title: p.file.name,
-                    key: p.file.path
+                    key: p.file.path,
+                    path: p.file.path,
+                    body: "",
                 }
             })
         })
