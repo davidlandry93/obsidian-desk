@@ -39,3 +39,6 @@ export function filtersToDataviewQuery(filters: Filter[]) {
 }
 
 
+export function keyOfFilter(f: Filter) {
+    return f.value
+}

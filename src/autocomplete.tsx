@@ -1,16 +1,15 @@
 import React, { ChangeEvent, useEffect } from 'react'
 import { useState } from 'react'
 import { produce } from 'immer'
-import { Filter } from './filter'
+import { Filter, keyOfFilter } from './filter'
+import { FilterChip } from './filterchip'
 
 interface AutocompleteProps {
     suggestions: Filter[]
     onChange: (newFilters: Filter[]) => void
 }
 
-function keyOfFilter(f: Filter) {
-    return f.value
-}
+
 
 export function AutocompleteSearchBox(props: AutocompleteProps) {
     const [userInput, setUserInput] = useState('')
@@ -56,7 +55,7 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
     })
 
     const chips = filters.map((f, i) =>{
-        return <span className="desk__chip" onClick={() => {removeChip(i)}} key={keyOfFilter(f)}>{f.value}</span>
+        return <FilterChip filter={f} onClick={() => removeChip(i)} key={keyOfFilter(f)} />
     })
 
     return (
