@@ -25,3 +25,26 @@ If your plugin does not need CSS, delete this file.
 .desk__search-result-title {
     font-weight: bold;
 }
+
+.desk__autocomplete-search-box-container {
+    width: 80%;
+    margin: auto;
+}
+
+.desk__search-box-chip-container {
+    flex-grow: 0;
+}
+
+.desk__autocomplete-search-box-combo {
+    border: 1px solid white;
+    width: 100%;
+    display: flex;
+}
+
+.desk__search-box-container-input {
+    flex-grow: 1;
+}
+
+.desk__suggestion-item-selected {
+
+}

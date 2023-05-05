@@ -5,7 +5,7 @@ import { createRoot, Root } from "react-dom/client"
 
 export const VIEW_TYPE_DESK = "desk-view"
 
-import DeskComponent from './components/desk'
+import DeskComponent from './src/desk'
 
 
 export class DeskView extends ItemView {
@@ -34,7 +34,7 @@ export class DeskView extends ItemView {
         this.root = createRoot(container)
         this.root.render(
           <React.StrictMode>
-            <DeskComponent vault={this.vault} />
+            <DeskComponent vault={this.vault} metadataCache={this.metadataCache} />
           </React.StrictMode>
         )
     }
