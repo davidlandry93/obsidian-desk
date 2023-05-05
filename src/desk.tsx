@@ -1,10 +1,10 @@
 import * as React from 'react'
-import { TFile } from 'obsidian'
+import { produce } from 'immer'
 
 
 import { AutocompleteSearchBox } from './autocomplete'
 import { Filter, filtersToDataviewQuery } from './filter'
-import { produce } from 'immer'
+import { NoteCard } from './notecard'
 
 interface SearchResult {
   title: string
@@ -13,25 +13,14 @@ interface SearchResult {
   path: string
 }
 
-interface ResultsDisplayProps {
+interface SearchResultsProps {
   results: SearchResult[]
 }
 
-function navigateToNote(path: string) {
-    console.log("navigating to node", path)
-    const note = app.vault.getAbstractFileByPath(path)
-    console.log(note)
-    if (note instanceof TFile) {
-        app.workspace.getLeaf('tab').openFile(note)
-    }
-}
 
-function ResultsDisplay(props: ResultsDisplayProps) {
+function ResultsDisplay(props: SearchResultsProps) {
     const resultItems = props.results.map(r => <div className='desk__search-result'>
-        <div className='desk__search-result-title' key={r.key}>
-            <a onClick={() => {navigateToNote(r.path)}}>{r.title}</a>
-            <a href={r.path}>{r.title}</a>
-        </div>
+        <NoteCard title={r.title} path={r.path} key={r.key} />
     </div>)
 
     return <div className='desk__search-result-container'>
@@ -102,10 +91,7 @@ export default class DeskComponent extends React.Component {
         const dv = app.plugins.plugins.dataview.api
         const dataviewQuery = filtersToDataviewQuery(filters)
 
-        console.log("Running data view query", dataviewQuery)
-
         const pages = dv.pages(dataviewQuery)
-        console.log("Result", pages)
 
         const newState = produce(this.state, draft => {
             draft.results = pages.map((p: any) => {

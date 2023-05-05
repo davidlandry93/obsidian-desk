@@ -14,8 +14,6 @@ const iconOfType = {
     'text': CaseLower
 }
 
-
-
 export function FilterChip(props: FilterChipProps) {
     const IconType = iconOfType[props.filter.type]
 

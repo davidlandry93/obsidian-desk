@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect } from 'react'
+import React, { ChangeEvent, useEffect, useRef } from 'react'
 import { useState } from 'react'
 import { produce } from 'immer'
 import { Filter, keyOfFilter } from './filter'
@@ -9,14 +9,13 @@ interface AutocompleteProps {
     onChange: (newFilters: Filter[]) => void
 }
 
-
-
 export function AutocompleteSearchBox(props: AutocompleteProps) {
     const [userInput, setUserInput] = useState('')
     const [showSuggestions, setShowSuggestions] = useState(false)
     const [filteredSuggestions, setFilteredSuggestions] = useState(props.suggestions)
     const [selectedSuggestion, setSelectedSuggestion] = useState(0)
     const [filters, setFilters] = useState<Filter[]>([])
+    const textInputRef = useRef<HTMLInputElement>(null)
 
     function onTextChange(e: ChangeEvent<HTMLInputElement>) {
         setUserInput(e.target.value)
@@ -41,9 +40,24 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
         }))
     }
 
+    const onKeyDown = (e: KeyboardEvent) => {
+        if(userInput.length === 0 && e.key === "Backspace" && e.target === textInputRef.current) {
+            setFilters(produce(filters, draft => {
+                draft.pop()
+            }))
+        }
+
+        return false
+    }
+
     useEffect(() => {
         props.onChange(filters)
     }, [filters])
+
+    useEffect(() => {
+        textInputRef.current.addEventListener('keydown', onKeyDown)
+        return () => textInputRef.current.removeEventListener('keydown',onKeyDown)
+    }, [userInput, filters])
 
     const suggestionComponents = filteredSuggestions.map((s, index) => { 
         return <li key={keyOfFilter(s)}>
@@ -62,7 +76,7 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
         <div className='desk__autocomplete-search-box-container'>
             <div className='desk__autocomplete-search-box-combo'>
                 <div className='desk__search-box-chip-container'>{chips}</div>
-                <input className='desk__search-box-container-input' type="text" value={userInput} onChange={onTextChange}></input>
+                <input className='desk__search-box-container-input' type="text" value={userInput} onChange={onTextChange} ref={textInputRef}></input>
             </div>
             { showSuggestions ? <div className='desk__autocomplete-suggestions'><ul>{suggestionComponents}</ul></div> : null}
         </div>

@@ -6,6 +6,7 @@ import { createRoot, Root } from "react-dom/client"
 export const VIEW_TYPE_DESK = "desk-view"
 
 import DeskComponent from './src/desk'
+import { ObsidianContext } from './src/obsidiancontext'
 
 
 export class DeskView extends ItemView {
@@ -34,7 +35,9 @@ export class DeskView extends ItemView {
         this.root = createRoot(container)
         this.root.render(
           <React.StrictMode>
-            <DeskComponent vault={this.vault} metadataCache={this.metadataCache} />
+            <ObsidianContext.Provider value={this.app}>
+              <DeskComponent />
+            </ObsidianContext.Provider>
           </React.StrictMode>
         )
     }
