@@ -4,8 +4,7 @@ import { ObsidianContext } from './obsidiancontext'
 import { App, TFile, MarkdownRenderer } from 'obsidian'
 
 
-function navigateToNote(path: string) {
-    const app = useContext(ObsidianContext) as App
+function navigateToNote(path: string, app: App) {
 
     console.log("navigating to node", path)
     const note = app.vault.getAbstractFileByPath(path)
@@ -51,7 +50,7 @@ export function NoteCard(props: NoteCardProps) {
     }
 
     return <div className='desk__search-result-title'>
-            <a onClick={() => {navigateToNote(props.path)}}>{props.title}</a>
+            <a onClick={() => {navigateToNote(props.path, app)}}>{props.title}</a>
             <div ref={ref}></div>
         </div>
 }

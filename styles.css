@@ -1,18 +1,9 @@
-/*
-
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
-*/
 
 .desk__search-result-container {
     display: flex;
     width: 100%;
     flex-wrap: wrap;
 }
-
 
 .desk__search-result {
     padding: 8px;
@@ -26,25 +17,96 @@ If your plugin does not need CSS, delete this file.
     font-weight: bold;
 }
 
+.desk__text-search-input-container {
+    display: flex;
+    width: 100%;
+    margin-bottom: var(--size-4-2);
+}
+
+.desk__text-search-input-container input {
+    flex-grow: 1;
+    font-size: var(--h2-size)
+}
+
 .desk__autocomplete-search-box-container {
     width: 80%;
     margin: auto;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    padding: var(--size-4-1) var(--size-4-2);
+    border-radius: var(--input-radius);
 }
 
 .desk__search-box-chip-container {
     flex-grow: 0;
 }
 
-.desk__autocomplete-search-box-combo {
-    border: 1px solid white;
+
+.desk__suggestions-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.desk__suggestions-list-item > a {
+    color: var(--text-normal);
+    text-decoration: none;
+    display: block;
+    padding: 3px;
     width: 100%;
+    line-height: 25px;
+}
+
+.desk__suggestions-list-item a.selected {
+    background-color: var(--background-modifier-active-hover);
+}
+
+
+span.desk__chip {
+    color: var(--tag-color);
+    font-size: var(--tag-size);
+    font-weight: bold;
+    background-color: var(--tag-background);
+    padding: var(--tag-padding-y) var(--tag-padding-x);
+    border: var(--tag-border-width) solid var(--tag-border-color);
+    border-radius: var(--tag-radius);
+    display: inline-block;
+    margin-right: var(--size-4-1);
+}
+
+span.desk__chip a {
+    text-decoration: none;
+}
+
+
+span.desk__chip:hover {
+    color: var(--tag-color-hover);
+    background-color: var(--tag-background-hover);
+    border-color: var(--tag-border-color-hover);
+}
+
+span.desk__chip .desk__chip-icon {
+    width: var(--tag-size);
+    height: var(--tag-size);
+}
+
+.desk__chip-delete-icon {
+    border-left: 1px solid var(--tag-border-color-hover)
+}
+
+.desk__autocomplete-suggestions {
+    position: absolute;
+    background-color: var(--modal-background);
+    border-radius: var(--modal-radius);
+    border: var(--modal-border-width) solid var(--modal-border-color);
+    width: var(--popover-width);
+    padding: var(--size-4-1);
+    font-size: var(--popover-font-size);
+}
+
+
+
+.desk__filter-menu {
     display: flex;
-}
-
-.desk__search-box-container-input {
-    flex-grow: 1;
-}
-
-.desk__suggestion-item-selected {
-
 }

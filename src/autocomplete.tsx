@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { produce } from 'immer'
 import { Filter, keyOfFilter } from './filter'
 import { FilterChip } from './filterchip'
+import { ListFilter } from 'lucide-react'
 
 interface AutocompleteProps {
     suggestions: Filter[]
@@ -25,13 +26,21 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
         )
     }
 
-    function onSuggestionClick(f: Filter) {
+    function addSuggestion(f: Filter) {
         setFilters(produce(filters, draft => {
             draft.push(f)
         }))
 
         setUserInput('')
         setShowSuggestions(false)
+
+        if(textInputRef.current) {
+            textInputRef.current.focus()
+        }
+    }
+
+    function selectSuggestion(index: number) {
+        setSelectedSuggestion(index)
     }
 
     function removeChip(index: number) {
@@ -47,6 +56,10 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
             }))
         }
 
+        if(e.key === "Enter" && e.target === textInputRef.current) {
+            addSuggestion(filteredSuggestions[selectedSuggestion])
+        }
+
         return false
     }
 
@@ -55,30 +68,59 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
     }, [filters])
 
     useEffect(() => {
-        textInputRef.current.addEventListener('keydown', onKeyDown)
-        return () => textInputRef.current.removeEventListener('keydown',onKeyDown)
+        if (textInputRef.current) {
+            textInputRef.current.addEventListener('keydown', onKeyDown)
+        }
+        
+        return () => { 
+            if(textInputRef.current) {
+                textInputRef.current.removeEventListener('keydown',onKeyDown) 
+            }
+        }
     }, [userInput, filters])
 
-    const suggestionComponents = filteredSuggestions.map((s, index) => { 
-        return <li key={keyOfFilter(s)}>
+    function suggestionDescription(filter: Filter) {
+        if (filter.type === "tag") {
+            return <span>Has tag <FilterChip filter={filter} closeable={false} /></span>;
+        } else if (filter.type === "folder") {
+            return <span>Is inside folder <FilterChip filter={filter} closeable={false} /></span>;
+        } else if (filter.type === "link") {
+            return <span>Links to <FilterChip filter={filter} closeable={false} /></span>;
+        } else {
+            throw new Error("Unknown filter type when generating description text.")
+        }
+    }
+
+    const suggestionComponents = filteredSuggestions.map((suggestion, index) => { 
+        return <li key={keyOfFilter(suggestion)} className={`desk__suggestions-list-item`}>
             <a 
-            className={`desk__suggestion-item ${index === selectedSuggestion ? 'desk__suggestion-item-selected' : ''}`}
-            onClick={() => {onSuggestionClick(s)}}
-            >{s.value}</a>
+            className={`${index === selectedSuggestion ? 'selected' : ''}`}
+            onClick={() => {addSuggestion(suggestion)}}
+            onMouseEnter={() => {selectSuggestion(index)}}
+            >{suggestionDescription(suggestion)}</a>
         </li>
     })
 
     const chips = filters.map((f, i) =>{
-        return <FilterChip filter={f} onClick={() => removeChip(i)} key={keyOfFilter(f)} />
+        return <FilterChip filter={f} onClick={() => removeChip(i)} key={keyOfFilter(f)} closeable={true} />
     })
 
     return (
-        <div className='desk__autocomplete-search-box-container'>
-            <div className='desk__autocomplete-search-box-combo'>
-                <div className='desk__search-box-chip-container'>{chips}</div>
-                <input className='desk__search-box-container-input' type="text" value={userInput} onChange={onTextChange} ref={textInputRef}></input>
+        <div className='desk__filter-menu'>
+            <ListFilter className='list-filter-icon' />
+            <div className={`desk__autocomplete-search-box-container`}>
+                {chips}
+                <div className='desk__filter-search-container'>
+                    <input 
+                        className='desk__search-box-container-input' 
+                        type="text" 
+                        value={userInput} 
+                        onChange={onTextChange}
+                        placeholder='Filter by tag, link...'
+                        ref={textInputRef} ></input>
+                    { showSuggestions ? <div className='desk__autocomplete-suggestions'><ul className="desk__suggestions-list">{suggestionComponents}</ul></div> : null}
+                </div>
             </div>
-            { showSuggestions ? <div className='desk__autocomplete-suggestions'><ul>{suggestionComponents}</ul></div> : null}
         </div>
     )
 }

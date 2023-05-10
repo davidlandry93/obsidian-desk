@@ -2,7 +2,7 @@ import * as React from 'react'
 import { produce } from 'immer'
 
 
-import { AutocompleteSearchBox } from './autocomplete'
+import { AutocompleteSearchBox as FilterMenu } from './autocomplete'
 import { Filter, filtersToDataviewQuery } from './filter'
 import { NoteCard } from './notecard'
 
@@ -63,7 +63,7 @@ export default class DeskComponent extends React.Component {
     }
 
     getFolderSuggestions(): Filter[] {
-        const folderPaths = app.vault.getAllLoadedFiles().filter(f => 'children' in f).map(f => f.path)
+        const folderPaths = app.vault.getAllLoadedFiles().filter(f => ('children' in f) && f.path !== '/').map(f => f.path)
         return folderPaths.map((p) => {
             return {
                 type: 'folder',
@@ -75,16 +75,6 @@ export default class DeskComponent extends React.Component {
 
     getLinkSuggestions(): Filter[] {
         return app.metadataCache.getLinkSuggestions().map((s) =>{ return {type: "link", value: s.path, key: s.path}})
-    }
-
-    render() {
-        return <div>
-            <h1>Desk</h1>
-            <h2>Search</h2>
-            <AutocompleteSearchBox suggestions={this.state.suggestions} onChange={(newFilters) => this.onQueryChange(newFilters)} />
-            <h2>Results</h2>
-            <ResultsDisplay results={this.state.results}></ResultsDisplay>
-        </div>
     }
 
     onQueryChange(filters: Filter[]) {
@@ -105,4 +95,21 @@ export default class DeskComponent extends React.Component {
         })
         this.setState(newState)
     }
+
+    render() {
+        return <div>
+            <h1>Desk</h1>
+            <h2>Search</h2>
+            <div className='desk__search-menu'>
+                <div className='desk__text-search-input-container'>
+                    <input type="text" placeholder='Search text' />
+                </div>
+                <FilterMenu suggestions={this.state.suggestions} onChange={(newFilters) => this.onQueryChange(newFilters)} />
+            </div>
+            <h2>Results</h2>
+            <ResultsDisplay results={this.state.results}></ResultsDisplay>
+        </div>
+    }
+
+
 }
