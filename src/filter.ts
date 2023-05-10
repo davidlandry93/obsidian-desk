@@ -19,7 +19,12 @@ export interface FolderFilter {
     value: string,
 }
 
-export type Filter = TagFilter | TextFilter | LinkFilter | FolderFilter
+export interface BacklinkFilter {
+    type: "backlink",
+    value: string,
+}
+
+export type Filter = TagFilter | TextFilter | LinkFilter | FolderFilter | BacklinkFilter
 
 function filterToQueryTerm(filter: Filter): string {
     if (filter.type === "tag") {
@@ -28,6 +33,8 @@ function filterToQueryTerm(filter: Filter): string {
         return "[[" + filter.value + "]]"
     } else if (filter.type === "folder") {
         return "\"" + filter.value + "\""
+    } else if (filter.type === "backlink") {
+        return `outgoing([[${filter.value}]])`
     }
     throw new Error("Unhandled filter type")
 }
@@ -42,3 +49,5 @@ export function filtersToDataviewQuery(filters: Filter[]) {
 export function keyOfFilter(f: Filter) {
     return f.value
 }
+
+

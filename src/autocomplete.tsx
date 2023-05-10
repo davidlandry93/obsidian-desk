@@ -22,7 +22,7 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
         setUserInput(e.target.value)
         setShowSuggestions(true)
         setFilteredSuggestions(
-            props.suggestions.filter(s => s.value.contains(e.target.value) && !filters.contains(s))
+            props.suggestions.filter(s => s.value.toLowerCase().contains(e.target.value.toLowerCase()) && !filters.contains(s))
         )
     }
 
@@ -86,7 +86,9 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
             return <span>Is inside folder <FilterChip filter={filter} closeable={false} /></span>;
         } else if (filter.type === "link") {
             return <span>Links to <FilterChip filter={filter} closeable={false} /></span>;
-        } else {
+        } else if (filter.type === "backlink") {
+            return <span>Is linked by <FilterChip filter={filter} closeable={false} /></span>
+        } else { 
             throw new Error("Unknown filter type when generating description text.")
         }
     }
@@ -105,6 +107,10 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
         return <FilterChip filter={f} onClick={() => removeChip(i)} key={keyOfFilter(f)} closeable={true} />
     })
 
+    const suggestionContents = <div className='desk__autocomplete-suggestions'>
+        { filteredSuggestions.length > 0 ? <ul className="desk__suggestions-list">{suggestionComponents}</ul> : <p>No filter match your query</p> }
+    </div>
+
     return (
         <div className='desk__filter-menu'>
             <ListFilter className='list-filter-icon' />
@@ -118,7 +124,7 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
                         onChange={onTextChange}
                         placeholder='Filter by tag, link...'
                         ref={textInputRef} ></input>
-                    { showSuggestions ? <div className='desk__autocomplete-suggestions'><ul className="desk__suggestions-list">{suggestionComponents}</ul></div> : null}
+                    { showSuggestions ? suggestionContents : null}
                 </div>
             </div>
         </div>

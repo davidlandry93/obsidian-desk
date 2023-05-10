@@ -49,8 +49,8 @@ export function NoteCard(props: NoteCardProps) {
         setBody('Error')
     }
 
-    return <div className='desk__search-result-title'>
-            <a onClick={() => {navigateToNote(props.path, app)}}>{props.title}</a>
-            <div ref={ref}></div>
+    return <div className='desk__note-card'>
+            <a onClick={() => {navigateToNote(props.path, app)}}><h3>{props.title}</h3></a>
+            <div className='desk__search-result-content' ref={ref}></div>
         </div>
 }

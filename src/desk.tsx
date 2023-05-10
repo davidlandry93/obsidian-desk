@@ -4,29 +4,11 @@ import { produce } from 'immer'
 
 import { AutocompleteSearchBox as FilterMenu } from './autocomplete'
 import { Filter, filtersToDataviewQuery } from './filter'
-import { NoteCard } from './notecard'
-
-interface SearchResult {
-  title: string
-  key: string
-  body: string
-  path: string
-}
-
-interface SearchResultsProps {
-  results: SearchResult[]
-}
+import { ResultsDisplay, SearchResult } from './results'
 
 
-function ResultsDisplay(props: SearchResultsProps) {
-    const resultItems = props.results.map(r => <div className='desk__search-result'>
-        <NoteCard title={r.title} path={r.path} key={r.key} />
-    </div>)
 
-    return <div className='desk__search-result-container'>
-        {resultItems}   
-    </div>
-}
+
 
 
 interface DeskViewState {
@@ -55,7 +37,7 @@ export default class DeskComponent extends React.Component {
     }
 
     getAllSuggestions(): Filter[] {
-        return [...this.getTagSuggestions(), ...this.getLinkSuggestions(), ...this.getFolderSuggestions()]
+        return [...this.getTagSuggestions(), ...this.getLinkSuggestions(), ...this.getFolderSuggestions(), ...this.getBacklinkSuggestions()]
     }
 
     getTagSuggestions(): Filter[] {
@@ -75,6 +57,21 @@ export default class DeskComponent extends React.Component {
 
     getLinkSuggestions(): Filter[] {
         return app.metadataCache.getLinkSuggestions().map((s) =>{ return {type: "link", value: s.path, key: s.path}})
+    }
+
+    getBacklinkSuggestions(): Filter[] {
+        const dv = app.plugins.getPlugin('dataview').api
+
+        const allPages = dv.pages('""').values
+
+        const withBacklinks = allPages.map(p => p.file).filter((p: any) => p.outlinks.length > 0).map((p: any) => {
+            return {
+                type: "backlink",
+                value: p.path,
+                key: p.path
+            }
+        })
+        return withBacklinks
     }
 
     onQueryChange(filters: Filter[]) {

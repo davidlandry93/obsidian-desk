@@ -1,6 +1,6 @@
 import React, { MouseEventHandler } from 'react'
 import {Filter, keyOfFilter} from './filter'
-import { Folder, Link, CaseLower, X, Tag } from 'lucide-react'
+import { Folder, Link, CaseLower, X, Tag, FileInput, FileOutput } from 'lucide-react'
 
 interface FilterChipProps {
     filter: Filter,
@@ -10,9 +10,10 @@ interface FilterChipProps {
 
 const iconOfType = {
     'folder': Folder,
-    'link': Link,
+    'link': FileInput,
     'tag': Tag,
-    'text': CaseLower
+    'text': CaseLower,
+    'backlink': FileOutput,
 }
 
 export function FilterChip(props: FilterChipProps) {
