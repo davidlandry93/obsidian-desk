@@ -7,6 +7,8 @@ import { SortChip } from './sortchip'
 import { ListFilter } from 'lucide-react'
 import {MaybeSortOption} from './sortchip'
 
+const MAX_SUGGESTIONS = 50
+
 interface AutocompleteProps {
     suggestions: Filter[]
     onChange: (newFilters: Filter[]) => void
@@ -96,7 +98,7 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
         }
     }
 
-    const suggestionComponents = filteredSuggestions.map((suggestion, index) => { 
+    const suggestionComponents = filteredSuggestions.slice(0, MAX_SUGGESTIONS).map((suggestion, index) => { 
         return <li key={keyOfFilter(suggestion)} className={`desk__dropdown-list-item`}>
             <a 
             className={`${index === selectedSuggestion ? 'selected' : ''}`}
@@ -110,8 +112,13 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
         return <FilterChip filter={f} onClick={() => removeChip(i)} key={keyOfFilter(f)} closeable={true} />
     })
 
+    const suggestionList = <div>
+        <ul className="desk__dropdown-list">{suggestionComponents}</ul>
+        {filteredSuggestions.length >= MAX_SUGGESTIONS ? <p className="desk__dropdown-list-info">Keep typing to show other suggestions</p> : null}
+    </div>
+
     const suggestionContents = <div className='desk__dropdown'>
-        { filteredSuggestions.length > 0 ? <ul className="desk__dropdown-list">{suggestionComponents}</ul> : <p>No filter match your query</p> }
+        { filteredSuggestions.length > 0 ? suggestionList : <p>No filter match your query</p> }
     </div>
 
     return (

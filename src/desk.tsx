@@ -104,14 +104,19 @@ export default class DeskComponent extends React.Component {
     onSortChange(sortOption: MaybeSortOption) {
         const sorters: { [key: string]: (a: SearchResult, b: SearchResult) => number} = {
             "modified_date": (a: SearchResult, b: SearchResult) => a.mtime.toMillis() - b.mtime.toMillis(),
-            "name": (a: SearchResult, b: SearchResult) => a.title.localeCompare(b.title)
+            "name": (a: SearchResult, b: SearchResult) => a.title.localeCompare(b.title),
+            "size": (a: SearchResult, b: SearchResult) => a.size - b.size
         }
-
 
         if (sortOption !== null) {
             this.setState(produce(this.state, draft => {
                 const newArray = draft.results.slice()
-                newArray.sort(sorters[sortOption.type])
+
+                let sortFunction = sorters[sortOption.type]
+                if(sortOption.reverse) {
+                    sortFunction = (a, b) => sorters[sortOption.type](b, a)
+                }
+                newArray.sort(sortFunction)
                 draft.results = newArray
             }))
         }

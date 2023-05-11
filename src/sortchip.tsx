@@ -1,5 +1,6 @@
 import React, {MouseEvent, useEffect, useRef, useState} from 'react'
-import { ChevronDown, X } from 'lucide-react'
+import { ArrowDownAZ, ArrowUpAZ, ChevronDown, X } from 'lucide-react'
+import { produce } from 'immer'
 
 interface SortChipProps {
     onChange: (sortOption: MaybeSortOption) => void
@@ -7,14 +8,16 @@ interface SortChipProps {
 
 interface SortOption {
     label: string,
-    type: "modified_date" | "name",
+    type: "modified_date" | "name" | "size",
+    reverse: boolean,
 }
 
 export type MaybeSortOption = SortOption | null
 
 const sortOptions: SortOption[] = [
-    {label: "Date Modified", type: "modified_date"},
-    {label: "Name", type: "name"}
+    {label: "Date Modified", type: "modified_date", reverse: false},
+    {label: "Name", type: "name", reverse: false},
+    {label: "Note size", type: "size", reverse: false},
 ]
 
 export function SortChip(props: SortChipProps) {
@@ -46,7 +49,15 @@ export function SortChip(props: SortChipProps) {
 
     function onClick(e: MouseEvent) {
         e.stopPropagation()
-        setShowDropdown(!showDropdown)
+
+        if (sortOption !== null) {
+            setSortOption(produce(sortOption, draft => {
+                draft.reverse = !draft.reverse
+            }))
+        } else {
+            setShowDropdown(!showDropdown)
+        }
+
     }
 
     function optionClicked(sortOption: SortOption) {
@@ -69,11 +80,16 @@ export function SortChip(props: SortChipProps) {
         </ul>
     </div>
 
+    const orderIcon = sortOption && sortOption.reverse ? <ArrowDownAZ className="desk__chip-icon" /> : <ArrowUpAZ className="desk__chip-icon"/>
+    
+
     return <div className='desk__sort-chip-container'>
-            <span className="desk__chip" onClick={(e) => {onClick(e)}}>
-            { sortOption === null ? "Sort by..." : sortOption.label }
-            <ChevronDown />
-            { sortOption === null ? null : <X onClick={() => {setSortOption(null)}} />}
+            <span className={`desk__chip ${sortOption === null ? 'empty' : ''}`} onClick={(e) => {onClick(e)}}>
+            { sortOption === null ? "Sort by..." : <span> {orderIcon}{ sortOption.label}</span> }
+            { sortOption === null ? <ChevronDown className="desk__chip-icon" /> : <X className="desk__chip-icon" onClick={(e: MouseEvent) => {
+                e.stopPropagation()
+                setSortOption(null)
+            }} />}
         </span>
         { showDropdown ? dropdown : null }
     </div>

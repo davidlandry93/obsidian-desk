@@ -112,6 +112,10 @@ span.desk__chip {
     margin: 0 var(--size-4-1) var(--size-4-1) 0;
 }
 
+span.desk__chip.empty {
+    background-color: none;
+}
+
 span.desk__chip a {
     text-decoration: none;
 }
@@ -131,6 +135,8 @@ span.desk__chip .desk__chip-icon {
 .desk__chip-delete-icon {
     border-left: 1px solid var(--tag-border-color-hover)
 }
+
+
 
 .desk__dropdown {
     position: absolute;
@@ -167,4 +173,9 @@ div.desk__sort-chip-container {
 div.desk__sort-chip-dropdown {
     position: absolute;
     overflow: hidden;
+}
+
+.desk__dropdown-list-info {
+    color: var(--text-muted);
+    text-align: center;
 }
