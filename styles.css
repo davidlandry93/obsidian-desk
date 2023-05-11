@@ -1,8 +1,27 @@
 
+.desk_root {
+    position: relative;
+}
+
 .desk__search-result-container {
     display: flex;
     width: 100%;
     flex-wrap: wrap;
+    overflow: auto;
+    position: relative;
+    top: 110px;
+    justify-content: center;
+}
+
+.desk__search-menu {
+    padding: var(--size-4-4);
+    overflow: hidden;
+    position: absolute;
+    background-color: var(--background-primary);
+    width: 100%;
+    z-index: 1;
+    border-bottom: var(--border-width) solid var(--background-modifier-border);
+    overflow: visible;
 }
 
 .desk__note-card {
@@ -10,9 +29,10 @@
     margin: 8px;
     border-radius: 8px;
     border: 1px solid var(--background-modifier-border);
-    width: 200px;
-    max-height: 300px;
     word-break: break-word;
+    user-select: auto;
+    width: 500px;
+    background-color: var(--background-primary);
 }
 
 .desk__note-card h3 {
@@ -26,7 +46,12 @@
 }
 
 .desk__search-result-content {
-    font-size: var(--text-normal)
+    font-size: var(--text-normal);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+    max-height: 300px;
+
 }
 
 .desk__text-search-input-container {
@@ -55,13 +80,13 @@
 }
 
 
-.desk__suggestions-list {
+.desk__dropdown-list {
     list-style-type: none;
     margin: 0;
     padding: 0;
 }
 
-.desk__suggestions-list-item > a {
+.desk__dropdown-list-item > a {
     color: var(--text-normal);
     text-decoration: none;
     display: block;
@@ -70,7 +95,7 @@
     line-height: 25px;
 }
 
-.desk__suggestions-list-item a.selected {
+.desk__dropdown-list-item a.selected {
     background-color: var(--background-modifier-active-hover);
 }
 
@@ -84,7 +109,7 @@ span.desk__chip {
     border: var(--tag-border-width) solid var(--tag-border-color);
     border-radius: var(--tag-radius);
     display: inline-block;
-    margin-right: var(--size-4-1);
+    margin: 0 var(--size-4-1) var(--size-4-1) 0;
 }
 
 span.desk__chip a {
@@ -107,7 +132,7 @@ span.desk__chip .desk__chip-icon {
     border-left: 1px solid var(--tag-border-color-hover)
 }
 
-.desk__autocomplete-suggestions {
+.desk__dropdown {
     position: absolute;
     background-color: var(--modal-background);
     border-radius: var(--modal-radius);
@@ -117,9 +142,10 @@ span.desk__chip .desk__chip-icon {
     font-size: var(--popover-font-size);
     max-height: 50vh;
     overflow-y: scroll;
+    z-index: 1;
 }
 
-.desk__autocomplete-suggestions::-webkit-scrollbar{
+.desk__dropdown::-webkit-scrollbar{
     display: none;
   }
 
@@ -127,4 +153,18 @@ span.desk__chip .desk__chip-icon {
 
 .desk__filter-menu {
     display: flex;
+}
+
+
+.view-content:has(div.desk__root) {
+    padding: 0;
+}
+
+div.desk__sort-chip-container {
+
+}
+
+div.desk__sort-chip-dropdown {
+    position: absolute;
+    overflow: hidden;
 }

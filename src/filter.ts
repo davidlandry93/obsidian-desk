@@ -12,6 +12,8 @@ export interface TextFilter {
 export interface LinkFilter {
     type: "link",
     value: string,
+    exists: boolean,
+    alias?: string,
 }
 
 export interface FolderFilter {
@@ -45,9 +47,20 @@ export function filtersToDataviewQuery(filters: Filter[]) {
     return query
 }
 
-
 export function keyOfFilter(f: Filter) {
-    return f.value
+    if (f.type === 'link') {
+        return keyOfLinkFilter(f)
+    } else {
+        return `${f.type}:${f.value}`
+    }
 }
 
+function keyOfLinkFilter(f: LinkFilter) {
+    const keyBody = 'alias' in f ? f.alias : f.value
+    const aliasTag = 'alias' in f ? 'alias:' : ''
+    const existTag = !f.exists ? 'nofile:' : ''
 
+    const key = `${f.type}:${aliasTag}${existTag}${keyBody}`
+
+    return key
+}

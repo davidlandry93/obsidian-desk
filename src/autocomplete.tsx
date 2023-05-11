@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { produce } from 'immer'
 import { Filter, keyOfFilter } from './filter'
 import { FilterChip } from './filterchip'
+import { SortChip } from './sortchip'
 import { ListFilter } from 'lucide-react'
 
 interface AutocompleteProps {
@@ -94,7 +95,7 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
     }
 
     const suggestionComponents = filteredSuggestions.map((suggestion, index) => { 
-        return <li key={keyOfFilter(suggestion)} className={`desk__suggestions-list-item`}>
+        return <li key={keyOfFilter(suggestion)} className={`desk__dropdown-list-item`}>
             <a 
             className={`${index === selectedSuggestion ? 'selected' : ''}`}
             onClick={() => {addSuggestion(suggestion)}}
@@ -107,14 +108,15 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
         return <FilterChip filter={f} onClick={() => removeChip(i)} key={keyOfFilter(f)} closeable={true} />
     })
 
-    const suggestionContents = <div className='desk__autocomplete-suggestions'>
-        { filteredSuggestions.length > 0 ? <ul className="desk__suggestions-list">{suggestionComponents}</ul> : <p>No filter match your query</p> }
+    const suggestionContents = <div className='desk__dropdown'>
+        { filteredSuggestions.length > 0 ? <ul className="desk__dropdown-list">{suggestionComponents}</ul> : <p>No filter match your query</p> }
     </div>
 
     return (
         <div className='desk__filter-menu'>
             <ListFilter className='list-filter-icon' />
             <div className={`desk__autocomplete-search-box-container`}>
+                <SortChip />
                 {chips}
                 <div className='desk__filter-search-container'>
                     <input 

@@ -3,7 +3,7 @@ import { produce } from 'immer'
 
 
 import { AutocompleteSearchBox as FilterMenu } from './autocomplete'
-import { Filter, filtersToDataviewQuery } from './filter'
+import { BacklinkFilter, Filter, FolderFilter, LinkFilter, filtersToDataviewQuery } from './filter'
 import { ResultsDisplay, SearchResult } from './results'
 
 
@@ -37,14 +37,20 @@ export default class DeskComponent extends React.Component {
     }
 
     getAllSuggestions(): Filter[] {
-        return [...this.getTagSuggestions(), ...this.getLinkSuggestions(), ...this.getFolderSuggestions(), ...this.getBacklinkSuggestions()]
+        const suggestions = [
+            ...this.getTagSuggestions(), 
+            ...this.getLinkSuggestions(), 
+            ...this.getFolderSuggestions(), 
+            ...this.getBacklinkSuggestions()
+        ]
+        return suggestions.sort((a, b) => a.value.length - b.value.length)
     }
 
     getTagSuggestions(): Filter[] {
         return Object.keys(app.metadataCache.getTags()).map((t) => {return {type: "tag", value: t, key: t}})
     }
 
-    getFolderSuggestions(): Filter[] {
+    getFolderSuggestions(): FolderFilter[] {
         const folderPaths = app.vault.getAllLoadedFiles().filter(f => ('children' in f) && f.path !== '/').map(f => f.path)
         return folderPaths.map((p) => {
             return {
@@ -55,11 +61,19 @@ export default class DeskComponent extends React.Component {
         })
     }
 
-    getLinkSuggestions(): Filter[] {
-        return app.metadataCache.getLinkSuggestions().map((s) =>{ return {type: "link", value: s.path, key: s.path}})
+    getLinkSuggestions(): LinkFilter[] {
+        return app.metadataCache.getLinkSuggestions().map((s: any) =>{
+            const filter: LinkFilter = {type: "link", value: s.path, exists: s.file !== null}
+
+            if ('alias' in s) {
+                filter.alias = s.alias
+            }
+
+            return filter
+        })
     }
 
-    getBacklinkSuggestions(): Filter[] {
+    getBacklinkSuggestions(): BacklinkFilter[] {
         const dv = app.plugins.getPlugin('dataview').api
 
         const allPages = dv.pages('""').values
@@ -94,16 +108,13 @@ export default class DeskComponent extends React.Component {
     }
 
     render() {
-        return <div>
-            <h1>Desk</h1>
-            <h2>Search</h2>
+        return <div className="desk__root">
             <div className='desk__search-menu'>
                 <div className='desk__text-search-input-container'>
                     <input type="text" placeholder='Search text' />
                 </div>
                 <FilterMenu suggestions={this.state.suggestions} onChange={(newFilters) => this.onQueryChange(newFilters)} />
             </div>
-            <h2>Results</h2>
             <ResultsDisplay results={this.state.results}></ResultsDisplay>
         </div>
     }
