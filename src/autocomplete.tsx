@@ -5,10 +5,12 @@ import { Filter, keyOfFilter } from './filter'
 import { FilterChip } from './filterchip'
 import { SortChip } from './sortchip'
 import { ListFilter } from 'lucide-react'
+import {MaybeSortOption} from './sortchip'
 
 interface AutocompleteProps {
     suggestions: Filter[]
     onChange: (newFilters: Filter[]) => void
+    onSortChange: (sortOption: MaybeSortOption) => void
 }
 
 export function AutocompleteSearchBox(props: AutocompleteProps) {
@@ -116,7 +118,7 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
         <div className='desk__filter-menu'>
             <ListFilter className='list-filter-icon' />
             <div className={`desk__autocomplete-search-box-container`}>
-                <SortChip />
+                <SortChip onChange={(s) => {props.onSortChange(s)}}/>
                 {chips}
                 <div className='desk__filter-search-container'>
                     <input 

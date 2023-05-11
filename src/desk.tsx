@@ -1,14 +1,13 @@
 import * as React from 'react'
 import { produce } from 'immer'
+import { DateTime } from 'luxon'
 
 
 import { AutocompleteSearchBox as FilterMenu } from './autocomplete'
 import { BacklinkFilter, Filter, FolderFilter, LinkFilter, filtersToDataviewQuery } from './filter'
-import { ResultsDisplay, SearchResult } from './results'
-
-
-
-
+import { ResultsDisplay } from './results'
+import { DataviewFile, SearchResult, dataviewFileToSearchResult } from './domain/searchresult'
+import { MaybeSortOption } from './sortchip'
 
 
 interface DeskViewState {
@@ -92,19 +91,32 @@ export default class DeskComponent extends React.Component {
         const dv = app.plugins.plugins.dataview.api
         const dataviewQuery = filtersToDataviewQuery(filters)
 
-        const pages = dv.pages(dataviewQuery)
+        const pages = dv.pages(dataviewQuery).values
 
         const newState = produce(this.state, draft => {
-            draft.results = pages.map((p: any) => {
-                return {
-                    title: p.file.name,
-                    key: p.file.path,
-                    path: p.file.path,
-                    body: "",
-                }
+            draft.results = pages.map((p: any) =>{
+                return dataviewFileToSearchResult(p.file)
             })
         })
         this.setState(newState)
+    }
+
+    onSortChange(sortOption: MaybeSortOption) {
+        const sorters: { [key: string]: (a: SearchResult, b: SearchResult) => number} = {
+            "modified_date": (a: SearchResult, b: SearchResult) => a.mtime.toMillis() - b.mtime.toMillis(),
+            "name": (a: SearchResult, b: SearchResult) => a.title.localeCompare(b.title)
+        }
+
+
+        if (sortOption !== null) {
+            this.setState(produce(this.state, draft => {
+                const newArray = draft.results.slice()
+                newArray.sort(sorters[sortOption.type])
+                draft.results = newArray
+            }))
+        }
+
+        console.log("Sort Change!")
     }
 
     render() {
@@ -113,7 +125,7 @@ export default class DeskComponent extends React.Component {
                 <div className='desk__text-search-input-container'>
                     <input type="text" placeholder='Search text' />
                 </div>
-                <FilterMenu suggestions={this.state.suggestions} onChange={(newFilters) => this.onQueryChange(newFilters)} />
+                <FilterMenu suggestions={this.state.suggestions} onChange={(newFilters) => this.onQueryChange(newFilters)} onSortChange={(sortOption) => this.onSortChange(sortOption)} />
             </div>
             <ResultsDisplay results={this.state.results}></ResultsDisplay>
         </div>

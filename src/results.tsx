@@ -1,20 +1,13 @@
 import React, {useState, useRef, useEffect} from 'react'
 
 import { NoteCard } from './notecard'
+import { SearchResult } from './domain/searchresult'
 
 const RESULTS_BATCH_SIZE = 5
 
-export interface SearchResult {
-    title: string
-    key: string
-    body: string
-    path: string
-  }
-  
-
 interface SearchResultsProps {
-    results: SearchResult[]
-  }
+results: SearchResult[]
+}
 
 export function ResultsDisplay(props: SearchResultsProps) {
     const numberResults = props.results.length
@@ -22,7 +15,7 @@ export function ResultsDisplay(props: SearchResultsProps) {
     const resultDisplayRef = useRef(null)
     const bottomSensorRef = useRef(null)
 
-    const resultItems = props.results.slice(0, numberResultsShown).map(r => <div className='desk__search-result' key={r.key}>
+    const resultItems = props.results.slice(0, numberResultsShown).map(r => <div className='desk__search-result' key={r.path}>
         <NoteCard title={r.title} path={r.path}  />
     </div>)
 
