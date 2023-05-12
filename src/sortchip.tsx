@@ -1,9 +1,9 @@
 import React, {MouseEvent, useEffect, useRef, useState} from 'react'
 import { ArrowDownAZ, ArrowUpAZ, ChevronDown, X } from 'lucide-react'
-import { produce } from 'immer'
 
 interface SortChipProps {
     onChange: (sortOption: MaybeSortOption) => void
+    sort: MaybeSortOption
 }
 
 interface SortOption {
@@ -22,7 +22,6 @@ const sortOptions: SortOption[] = [
 ]
 
 export function SortChip(props: SortChipProps) {
-    const [sortOption, setSortOption] = useState<MaybeSortOption>(null)
     const [showDropdown, setShowDropdown] = useState(false)
     const dropdownRef = useRef(null)
 
@@ -41,25 +40,21 @@ export function SortChip(props: SortChipProps) {
 
     }, [showDropdown])
 
-    useEffect(() => {
-        props.onChange(sortOption)
-    }, [sortOption])
-
     function onClick(e: MouseEvent) {
         e.stopPropagation()
 
-        if (sortOption !== null) {
-            setSortOption(produce(sortOption, draft => {
-                draft.reverse = !draft.reverse
-            }))
+        if (props.sort !== null) {
+            props.onChange({
+                ...props.sort,
+                reverse: !props.sort.reverse
+            })
         } else {
             setShowDropdown(!showDropdown)
         }
-
     }
 
     function optionClicked(sortOption: SortOption) {
-        setSortOption(sortOption)
+        props.onChange(sortOption)
         setShowDropdown(false)
     }
 
@@ -78,15 +73,15 @@ export function SortChip(props: SortChipProps) {
         </ul>
     </div>
 
-    const orderIcon = sortOption && sortOption.reverse ? <ArrowDownAZ className="desk__chip-icon" /> : <ArrowUpAZ className="desk__chip-icon"/>
+    const orderIcon = props.sort && props.sort.reverse ? <ArrowDownAZ className="desk__chip-icon" /> : <ArrowUpAZ className="desk__chip-icon"/>
     
 
     return <div className='desk__sort-chip-container'>
-            <span className={`desk__chip ${sortOption === null ? 'empty' : ''}`} onClick={(e) => {onClick(e)}}>
-            { sortOption === null ? "Sort by..." : <span> {orderIcon}{ sortOption.label}</span> }
-            { sortOption === null ? <ChevronDown className="desk__chip-icon" /> : <X className="desk__chip-icon" onClick={(e: MouseEvent) => {
+            <span className={`desk__chip ${props.sort === null ? 'empty' : ''}`} onClick={(e) => {onClick(e)}}>
+            { props.sort === null ? "Sort by..." : <span> {orderIcon}{ props.sort.label}</span> }
+            { props.sort === null ? <ChevronDown className="desk__chip-icon" /> : <X className="desk__chip-icon" onClick={(e: MouseEvent) => {
                 e.stopPropagation()
-                setSortOption(null)
+                props.onChange(null)
             }} />}
         </span>
         { showDropdown ? dropdown : null }

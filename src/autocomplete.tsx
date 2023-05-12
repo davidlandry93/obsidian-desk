@@ -14,6 +14,7 @@ interface FilterMenuProps {
     addFilter: (newFilter: Filter) => void
     removeFilter: (index: number) => void
     onSortChange: (sortOption: MaybeSortOption) => void
+    sort: MaybeSortOption
 }
 
 export function FilterMenu(props: FilterMenuProps) {
@@ -115,7 +116,7 @@ export function FilterMenu(props: FilterMenuProps) {
         <div className='desk__filter-menu'>
             <ListFilter className='list-filter-icon' />
             <div className={`desk__autocomplete-search-box-container`}>
-                <SortChip onChange={(s) => {props.onSortChange(s)}}/>
+                <SortChip onChange={(s) => {props.onSortChange(s)}} sort={props.sort}/>
                 {chips}
                 <div className='desk__filter-search-container'>
                     <input 

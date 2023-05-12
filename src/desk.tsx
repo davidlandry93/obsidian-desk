@@ -86,15 +86,8 @@ export default class DeskComponent extends React.Component {
         return withBacklinks
     }
 
-    onQueryChange(filters: Filter[]) {
-        const newState = produce(this.state, draft => {
-            draft.filters = filters
-        })
-
-        this.setState(newState)
-    }
-
     onSortChange(sortOption: MaybeSortOption) {
+        console.log("Sorting changed")
         this.setState(produce(this.state, draft => {
             draft.sort = sortOption
         }))
@@ -153,6 +146,7 @@ export default class DeskComponent extends React.Component {
                 <FilterMenu 
                     filters={this.state.filters}
                     suggestions={this.state.suggestions}
+                    sort={this.state.sort}
                     onSortChange={(sortOption) => this.onSortChange(sortOption)}
                     addFilter={(f) => { this.onAddFilter(f)}}
                     removeFilter={(i: number) => { this.onRemoveFilter(i) }} />
