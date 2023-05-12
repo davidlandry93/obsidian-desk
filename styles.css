@@ -32,6 +32,7 @@
     width: 600px;
     min-height: 400px;
     background-color: var(--background-primary-alt);
+    padding-bottom: 30px;
 }
 
 .desk__note-card h3 {
@@ -76,8 +77,16 @@
     overflow: hidden;
     text-overflow: ellipsis;
     word-wrap: break-word;
-    max-height: 300px;
+    max-height: 280px;
+    transition: max-height 300ms ease-out;
+}
 
+.desk__search-result-content.overflowing {
+    border-bottom: 1px solid var(--text-faint)
+}
+
+.desk__search-result-content.expanded {
+    transition: max-height 300ms ease-out;
 }
 
 .desk__text-search-input-container {
@@ -214,3 +223,4 @@ div.desk__sort-chip-dropdown {
 .desk__results-bottom-sensor {
     height: 10px;
 }
+

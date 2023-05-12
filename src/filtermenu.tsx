@@ -13,7 +13,7 @@ interface FilterMenuProps {
     suggestions: Filter[]
     addFilter: (newFilter: Filter) => void
     removeFilter: (index: number) => void
-    reverseFilter: (index: number) => void
+    reverseFilter: (filter: Filter) => void
     onSortChange: (sortOption: MaybeSortOption) => void
     sort: MaybeSortOption
 }
@@ -110,7 +110,7 @@ export function FilterMenu(props: FilterMenuProps) {
     })
 
     const chips = filters.map((f, i) =>{
-        return <FilterChip filter={f} onClick={() => props.reverseFilter(i)} key={keyOfFilter(f)} closeable={true} onClose={() => removeChip(i)} />
+        return <FilterChip filter={f} onClick={() => props.reverseFilter(f)} key={keyOfFilter(f)} closeable={true} onClose={() => removeChip(i)} />
     })
 
     const suggestionList = <div>

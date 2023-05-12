@@ -119,9 +119,14 @@ export default class DeskComponent extends React.Component {
         this.setState(newState)
     }
 
-    reverseFilter(index: number) {
+    reverseFilter(filter: Filter) {
         const newFilters = this.state.filters.slice()
-        newFilters[index].reversed = !newFilters[index].reversed
+
+        const filterIndex = this.state.filters.indexOf(filter)
+        newFilters[filterIndex]= {
+            ...filter,
+            reversed: !filter.reversed
+        }
 
         this.setState({
             ...this.state,
@@ -164,7 +169,7 @@ export default class DeskComponent extends React.Component {
                     onSortChange={(sortOption) => this.onSortChange(sortOption)}
                     addFilter={(f) => { this.onAddFilter(f)}}
                     removeFilter={(i: number) => { this.onRemoveFilter(i) }}
-                    reverseFilter={(i) => { this.reverseFilter(i) }} />
+                    reverseFilter={(f) => { this.reverseFilter(f) }} />
             </div>
             <ResultsDisplay 
                 results={searchResults} 

@@ -1,4 +1,4 @@
-import React, {useContext, useState, useEffect, useRef} from 'react'
+import React, {useContext, useState, useEffect, useRef, useLayoutEffect, CSSProperties} from 'react'
 
 import { ObsidianContext } from './obsidiancontext'
 import { App, TFile, MarkdownRenderer } from 'obsidian'
@@ -26,17 +26,31 @@ interface NoteCardProps {
 export function NoteCard(props: NoteCardProps) {
     const app = useContext(ObsidianContext) as App
     const [body, setBody] = useState("")
-    const ref = useRef<HTMLDivElement>(null)
+    const contentRef = useRef<HTMLDivElement>(null)
+    const [expanded, setExpanded] = useState(false)
+    const [overflowing, setOverflowing] = useState(false)
+
 
     useEffect(() => {
-        const container = ref.current
+        const container = contentRef.current
 
         if(container !== null) {
-            MarkdownRenderer.renderMarkdown(body, container, props.path, null)
+            MarkdownRenderer.renderMarkdown(body, container, props.path, null).then(() => {
+                checkOverflow(container)
+            })
         } else {
             throw new Error("Own container not found")
         }
     }, [body])
+
+
+    function checkOverflow(container: HTMLDivElement) {
+        if (container.scrollHeight > container.clientHeight) {
+            setOverflowing(true)
+        } else {
+            setOverflowing(false)
+        }
+    }
 
     useEffect(() => {
         function onFetch(fileContents: string) {
@@ -51,14 +65,22 @@ export function NoteCard(props: NoteCardProps) {
         }
     }, [])
 
+    function onClick() {
+        setExpanded(!expanded)
+    }
+
     const file = app.vault.getAbstractFileByPath(props.path)
     const backlinkString = props.backlinks === 1 ? 'backlink' : 'backlinks'
+    const overflowingClass = overflowing && !expanded ? 'overflowing' : ''
+    const expandedClass = expanded ? 'expanded' : ''
+    const contentStyle = expanded && contentRef.current ? {maxHeight: contentRef.current.scrollHeight} : {}
 
-    return <div className='desk__note-card'>
-            <div className='desk__note-card-header'> 
+
+    return <div className='desk__note-card' onClick={() => { onClick() }}>
+            <div className='desk__note-card-header'>
                 <a onClick={() => {navigateToNote(props.path, app)}}><h3>{props.title}</h3></a>
             </div>
-            <div className='desk__search-result-content' ref={ref}></div>
+            <div className={`desk__search-result-content ${overflowingClass} ${expandedClass}`} ref={contentRef} style={contentStyle}></div>
             <div className='desk__note-card-footer'>
                 { props.folder === '' ? null : <span><Folder className="desk__note-card-header-details-icon" />{props.folder}</span> }
                 <span><FileInput className="desk__note-card-header-details-icon" />{`${props.backlinks} ${backlinkString}`}</span>

@@ -11,10 +11,10 @@ interface FilterChipProps {
 
 const iconOfType = {
     'folder': Folder,
-    'link': FileInput,
+    'link': FileOutput,
     'tag': Tag,
     'text': CaseLower,
-    'backlink': FileOutput,
+    'backlink': FileInput,
 }
 
 export function FilterChip(props: FilterChipProps) {
