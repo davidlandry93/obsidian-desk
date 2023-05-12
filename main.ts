@@ -45,7 +45,7 @@ export default class MyPlugin extends Plugin {
 			id: 'sample-editor-command',
 			name: 'Sample editor command',
 			editorCallback: (editor: Editor, view: MarkdownView) => {
-				console.log(editor.getSelection());
+				// console.log(editor.getSelection());
 				editor.replaceSelection('Sample Editor Command');
 			}
 		});

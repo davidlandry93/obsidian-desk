@@ -6,7 +6,11 @@ export interface SearchResult {
     size: number
     ctime: DateTime
     mtime: DateTime
+    folder: string
+    backlinks: number
 }
+
+type Link = any
 
 export interface DataviewFile {
     ctime: DateTime,
@@ -14,6 +18,8 @@ export interface DataviewFile {
     name: string,
     path: string,
     size: number,
+    folder: string,
+    inlinks: Link[]
 }
 
 export function dataviewFileToSearchResult(dvFile: DataviewFile): SearchResult {
@@ -23,5 +29,7 @@ export function dataviewFileToSearchResult(dvFile: DataviewFile): SearchResult {
         size: dvFile.size,
         ctime: dvFile.ctime,
         mtime: dvFile.mtime,
+        folder: dvFile.folder, // Dataview returns an empty string if no parent.
+        backlinks: dvFile.inlinks.length
     }
 }

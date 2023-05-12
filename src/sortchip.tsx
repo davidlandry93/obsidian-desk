@@ -8,7 +8,7 @@ interface SortChipProps {
 
 interface SortOption {
     label: string,
-    type: "modified_date" | "name" | "size",
+    type: "modified_date" | "name" | "size" | "backlinks",
     reverse: boolean,
 }
 
@@ -18,6 +18,7 @@ const sortOptions: SortOption[] = [
     {label: "Date Modified", type: "modified_date", reverse: false},
     {label: "Name", type: "name", reverse: false},
     {label: "Note size", type: "size", reverse: false},
+    {label: "Number of backlinks", type: "backlinks", reverse: true}
 ]
 
 export function SortChip(props: SortChipProps) {
@@ -27,11 +28,8 @@ export function SortChip(props: SortChipProps) {
 
     useEffect(() => {
         const handler = (ev: MouseEvent) => {
-            console.log("Got click")
             if (dropdownRef.current) {
                 if(showDropdown && !dropdownRef.current.contains(ev.target)) {
-                    console.log("Removing dropdown")
-
                     setShowDropdown(false)
                 }
             }

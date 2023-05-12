@@ -1,12 +1,11 @@
 import * as React from 'react'
 import { produce } from 'immer'
-import { DateTime } from 'luxon'
 
 
 import { AutocompleteSearchBox as FilterMenu } from './autocomplete'
 import { BacklinkFilter, Filter, FolderFilter, LinkFilter, filtersToDataviewQuery } from './filter'
 import { ResultsDisplay } from './results'
-import { DataviewFile, SearchResult, dataviewFileToSearchResult } from './domain/searchresult'
+import { SearchResult, dataviewFileToSearchResult } from './domain/searchresult'
 import { MaybeSortOption } from './sortchip'
 
 
@@ -23,13 +22,7 @@ export default class DeskComponent extends React.Component {
         super(props)
 
         this.state = {
-            results: app.vault.getMarkdownFiles().map((t) => {
-                return {
-                key: t.path,
-                title: t.basename,
-                path: t.path,
-                body: ""
-            }}),
+            results: [],
             filters: [],
             suggestions: this.getAllSuggestions()
         }
@@ -92,12 +85,12 @@ export default class DeskComponent extends React.Component {
         const dataviewQuery = filtersToDataviewQuery(filters)
 
         const pages = dv.pages(dataviewQuery).values
-
         const newState = produce(this.state, draft => {
             draft.results = pages.map((p: any) =>{
                 return dataviewFileToSearchResult(p.file)
             })
         })
+
         this.setState(newState)
     }
 
@@ -105,11 +98,12 @@ export default class DeskComponent extends React.Component {
         const sorters: { [key: string]: (a: SearchResult, b: SearchResult) => number} = {
             "modified_date": (a: SearchResult, b: SearchResult) => a.mtime.toMillis() - b.mtime.toMillis(),
             "name": (a: SearchResult, b: SearchResult) => a.title.localeCompare(b.title),
-            "size": (a: SearchResult, b: SearchResult) => a.size - b.size
+            "size": (a: SearchResult, b: SearchResult) => a.size - b.size,
+            "backlinks": (a: SearchResult, b: SearchResult) => a.backlinks - b.backlinks,
         }
 
         if (sortOption !== null) {
-            this.setState(produce(this.state, draft => {
+            const newResults = produce(this.state, draft => {
                 const newArray = draft.results.slice()
 
                 let sortFunction = sorters[sortOption.type]
@@ -118,10 +112,10 @@ export default class DeskComponent extends React.Component {
                 }
                 newArray.sort(sortFunction)
                 draft.results = newArray
-            }))
-        }
+            })
 
-        console.log("Sort Change!")
+            this.setState(newResults)
+        }
     }
 
     render() {
@@ -130,7 +124,10 @@ export default class DeskComponent extends React.Component {
                 <div className='desk__text-search-input-container'>
                     <input type="text" placeholder='Search text' />
                 </div>
-                <FilterMenu suggestions={this.state.suggestions} onChange={(newFilters) => this.onQueryChange(newFilters)} onSortChange={(sortOption) => this.onSortChange(sortOption)} />
+                <FilterMenu 
+                    suggestions={this.state.suggestions} 
+                    onChange={(newFilters) => this.onQueryChange(newFilters)} 
+                    onSortChange={(sortOption) => this.onSortChange(sortOption)} />
             </div>
             <ResultsDisplay results={this.state.results}></ResultsDisplay>
         </div>

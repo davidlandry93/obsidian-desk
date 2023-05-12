@@ -7,32 +7,31 @@
     display: flex;
     width: 100%;
     flex-wrap: wrap;
-    overflow: auto;
-    position: relative;
-    top: 110px;
+    overflow: scroll;
     justify-content: center;
 }
 
 .desk__search-menu {
     padding: var(--size-4-4);
-    overflow: hidden;
-    position: absolute;
+    position: sticky;
+    top: 0;
     background-color: var(--background-primary);
     width: 100%;
     z-index: 1;
     border-bottom: var(--border-width) solid var(--background-modifier-border);
-    overflow: visible;
 }
 
 .desk__note-card {
+    position: sticky;
     padding: 8px;
     margin: 8px;
     border-radius: 8px;
     border: 1px solid var(--background-modifier-border);
     word-break: break-word;
     user-select: auto;
-    width: 500px;
-    background-color: var(--background-primary);
+    width: 600px;
+    min-height: 400px;
+    background-color: var(--background-primary-alt);
 }
 
 .desk__note-card h3 {
@@ -43,6 +42,33 @@
 
 .desk__note-card a h3 {
     text-decoration: none;
+    margin-bottom: var(--size-4-1)
+}
+
+.desk__note-card-header-details {
+    color: var(--text-faint);
+    font-size: var(--font-smaller);
+    margin-top: var(--size-4-2);
+    margin-bottom: var(--size-4-4);
+}
+
+.desk__note-card-footer {
+    color: var(--text-faint);
+    margin-top: var(--size-4-2);
+    margin-bottom: var(--size-4-4);    
+    position: absolute;
+    bottom: 0;
+}
+
+.desk__note-card-footer > span {
+    margin-right: var(--size-4-2)
+}
+
+.desk__note-card-header-details-icon {
+    width: var(--icon-s);
+    height: var(--icon-s);
+    position: relative;
+    top: 2px;
 }
 
 .desk__search-result-content {
@@ -178,4 +204,8 @@ div.desk__sort-chip-dropdown {
 .desk__dropdown-list-info {
     color: var(--text-muted);
     text-align: center;
+}
+
+.desk__results-bottom-sensor {
+    height: 10px;
 }

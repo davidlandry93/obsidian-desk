@@ -2,11 +2,11 @@ import React, {useContext, useState, useEffect, useRef} from 'react'
 
 import { ObsidianContext } from './obsidiancontext'
 import { App, TFile, MarkdownRenderer } from 'obsidian'
+import { Clock, FileInput, Folder } from 'lucide-react'
+import { DateTime } from 'luxon'
 
 
 function navigateToNote(path: string, app: App) {
-
-    console.log("navigating to node", path)
     const note = app.vault.getAbstractFileByPath(path)
     if (note !== null && note instanceof TFile) {
         app.workspace.getLeaf('tab').openFile(note)
@@ -17,6 +17,9 @@ function navigateToNote(path: string, app: App) {
 interface NoteCardProps {
     path: string,
     title: string,
+    folder: string,
+    backlinks: number,
+    date: DateTime
 }
 
 
@@ -49,8 +52,17 @@ export function NoteCard(props: NoteCardProps) {
         setBody('Error')
     }
 
+    const backlinkString = props.backlinks === 1 ? 'backlink' : 'backlinks'
+
     return <div className='desk__note-card'>
-            <a onClick={() => {navigateToNote(props.path, app)}}><h3>{props.title}</h3></a>
+            <div className='desk__note-card-header'> 
+                <a onClick={() => {navigateToNote(props.path, app)}}><h3>{props.title}</h3></a>
+            </div>
             <div className='desk__search-result-content' ref={ref}></div>
+            <div className='desk__note-card-footer'>
+                { props.folder === '' ? null : <span><Folder className="desk__note-card-header-details-icon" />{props.folder}</span> }
+                <span><FileInput className="desk__note-card-header-details-icon" />{`${props.backlinks} ${backlinkString}`}</span>
+                <span><Clock className="desk__note-card-header-details-icon" />Modified on { props.date.toLocaleString(DateTime.DATE_SHORT) }</span>
+            </div>
         </div>
 }
