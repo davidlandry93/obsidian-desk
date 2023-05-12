@@ -1,46 +1,43 @@
 import equal from 'deep-equal'
 
 
-export interface TagFilter {
-    type: "tag",
-    value: string,
-}
-
-export interface TextFilter {
-    type: "text",
-    value: string,
+export interface BasicFilter {
+    type: "tag" | "text" | "folder" | "backlink"
+    value: string
+    reversed: boolean
 }
 
 export interface LinkFilter {
-    type: "link",
-    value: string,
-    exists: boolean,
-    alias?: string,
+    type: "link"
+    value: string
+    reversed: boolean
+    exists: boolean
+    alias?: string
 }
 
-export interface FolderFilter {
-    type: "folder",
-    value: string,
-}
 
-export interface BacklinkFilter {
-    type: "backlink",
-    value: string,
-}
-
-export type Filter = TagFilter | TextFilter | LinkFilter | FolderFilter | BacklinkFilter
+export type Filter = BasicFilter | LinkFilter
 
 function filterToQueryTerm(filter: Filter): string {
+    let baseString = ''
+
     if (filter.type === "tag") {
-        return filter.value
+        baseString = filter.value
     } else if (filter.type === "link") {
-        return "[[" + filter.value + "]]"
+        baseString = "[[" + filter.value + "]]"
     } else if (filter.type === "folder") {
-        return "\"" + filter.value + "\""
+        baseString = "\"" + filter.value + "\""
     } else if (filter.type === "backlink") {
-        return `outgoing([[${filter.value}]])`
+        baseString = `outgoing([[${filter.value}]])`
+    } else {
+        throw new Error("Unhandled filter type")
     }
-    throw new Error("Unhandled filter type")
+    
+    if (filter.reversed) {
+        baseString = "!" + baseString
+    }
+
+    return baseString
 }
 
 export function filtersToDataviewQuery(filters: Filter[]) {

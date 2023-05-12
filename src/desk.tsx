@@ -4,7 +4,7 @@ import { getDataviewAPI } from './dataview'
 
 
 import { FilterMenu as FilterMenu } from './filtermenu'
-import { BacklinkFilter, Filter, FolderFilter, LinkFilter, filtersToDataviewQuery } from './filter'
+import { BasicFilter, Filter, LinkFilter, filtersToDataviewQuery } from './filter'
 import { ResultsDisplay } from './results'
 import { SearchResult, dataviewFileToSearchResult } from './domain/searchresult'
 import { MaybeSortOption } from './sortchip'
@@ -43,16 +43,17 @@ export default class DeskComponent extends React.Component {
 
     getTagSuggestions(): Filter[] {
         const metadataCache = getMetadataCache(app)
-        return Object.keys(metadataCache.getTags()).map((t) => {return {type: "tag", value: t, key: t}})
+        return Object.keys(metadataCache.getTags()).map((t) => {return {type: "tag", value: t, key: t, reversed: false}})
     }
 
-    getFolderSuggestions(): FolderFilter[] {
+    getFolderSuggestions(): BasicFilter[] {
         const folderPaths = app.vault.getAllLoadedFiles().filter(f => ('children' in f) && f.path !== '/').map(f => f.path)
         return folderPaths.map((p) => {
             return {
                 type: 'folder',
                 value: p,
                 key: p,
+                reversed: false,
             }
         })
     }
@@ -61,7 +62,7 @@ export default class DeskComponent extends React.Component {
         const metadataCache = app.metadataCache as ExtendedMetadataCache
 
         return metadataCache.getLinkSuggestions().map((s: any) =>{
-            const filter: LinkFilter = {type: "link", value: s.path, exists: s.file !== null}
+            const filter: LinkFilter = {type: "link", value: s.path, exists: s.file !== null, reversed: false}
 
             if ('alias' in s) {
                 filter.alias = s.alias
@@ -71,7 +72,7 @@ export default class DeskComponent extends React.Component {
         })
     }
 
-    getBacklinkSuggestions(): BacklinkFilter[] {
+    getBacklinkSuggestions(): BasicFilter[] {
         const dv = getDataviewAPI(app)
 
         const allPages = dv.pages('""').values
@@ -118,6 +119,16 @@ export default class DeskComponent extends React.Component {
         this.setState(newState)
     }
 
+    reverseFilter(index: number) {
+        const newFilters = this.state.filters.slice()
+        newFilters[index].reversed = !newFilters[index].reversed
+
+        this.setState({
+            ...this.state,
+            filters: newFilters
+        })
+    }
+
     generateResults(): SearchResult[] {
         const dv = getDataviewAPI(app)
         const dataviewQuery = filtersToDataviewQuery(this.state.filters)
@@ -152,7 +163,8 @@ export default class DeskComponent extends React.Component {
                     sort={this.state.sort}
                     onSortChange={(sortOption) => this.onSortChange(sortOption)}
                     addFilter={(f) => { this.onAddFilter(f)}}
-                    removeFilter={(i: number) => { this.onRemoveFilter(i) }} />
+                    removeFilter={(i: number) => { this.onRemoveFilter(i) }}
+                    reverseFilter={(i) => { this.reverseFilter(i) }} />
             </div>
             <ResultsDisplay 
                 results={searchResults} 

@@ -138,6 +138,11 @@ span.desk__chip {
     margin: 0 var(--size-4-1) var(--size-4-1) 0;
 }
 
+span.desk__chip.reversed {
+    text-decoration: line-through;
+    filter: saturate(0.2)
+}
+
 span.desk__chip.empty {
     background-color: none;
 }

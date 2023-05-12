@@ -13,6 +13,7 @@ interface FilterMenuProps {
     suggestions: Filter[]
     addFilter: (newFilter: Filter) => void
     removeFilter: (index: number) => void
+    reverseFilter: (index: number) => void
     onSortChange: (sortOption: MaybeSortOption) => void
     sort: MaybeSortOption
 }
@@ -24,10 +25,11 @@ export function FilterMenu(props: FilterMenuProps) {
     const [selectedSuggestion, setSelectedSuggestion] = useState(0)
     const textInputRef = useRef<HTMLInputElement>(null)
 
+    // This state is only meant to forward the filters further down.
+    // Actual filter list is in Desk component.
     const [filters, setFilters] = useState(props.filters)
 
     useEffect(() => {
-        console.log("Use effect on filters!")
         setFilters(props.filters)
     }, [props.filters])
 
@@ -56,7 +58,6 @@ export function FilterMenu(props: FilterMenuProps) {
     }
 
     function removeChip(index: number) {
-        console.log("Called removeChip inside autocomplete.")
         props.removeFilter(index)
     }
 
@@ -109,7 +110,7 @@ export function FilterMenu(props: FilterMenuProps) {
     })
 
     const chips = filters.map((f, i) =>{
-        return <FilterChip filter={f} onClick={() => removeChip(i)} key={keyOfFilter(f)} closeable={true} />
+        return <FilterChip filter={f} onClick={() => props.reverseFilter(i)} key={keyOfFilter(f)} closeable={true} onClose={() => removeChip(i)} />
     })
 
     const suggestionList = <div>
