@@ -1,18 +1,21 @@
 import * as React from 'react'
 import { produce } from 'immer'
+import { getDataviewAPI } from './dataview'
 
 
-import { AutocompleteSearchBox as FilterMenu } from './autocomplete'
+import { FilterMenu as FilterMenu } from './autocomplete'
 import { BacklinkFilter, Filter, FolderFilter, LinkFilter, filtersToDataviewQuery } from './filter'
 import { ResultsDisplay } from './results'
 import { SearchResult, dataviewFileToSearchResult } from './domain/searchresult'
 import { MaybeSortOption } from './sortchip'
+import { ExtendedMetadataCache } from 'src/obsidianprivate'
+import { getMetadataCache } from './obsidian'
 
 
 interface DeskViewState {
-    results: SearchResult[]
     suggestions: Filter[]
     filters: Filter[]
+    sort: MaybeSortOption
 }
 
 export default class DeskComponent extends React.Component {
@@ -22,8 +25,8 @@ export default class DeskComponent extends React.Component {
         super(props)
 
         this.state = {
-            results: [],
             filters: [],
+            sort: null,
             suggestions: this.getAllSuggestions()
         }
     }
@@ -39,7 +42,8 @@ export default class DeskComponent extends React.Component {
     }
 
     getTagSuggestions(): Filter[] {
-        return Object.keys(app.metadataCache.getTags()).map((t) => {return {type: "tag", value: t, key: t}})
+        const metadataCache = getMetadataCache(app)
+        return Object.keys(metadataCache.getTags()).map((t) => {return {type: "tag", value: t, key: t}})
     }
 
     getFolderSuggestions(): FolderFilter[] {
@@ -54,7 +58,9 @@ export default class DeskComponent extends React.Component {
     }
 
     getLinkSuggestions(): LinkFilter[] {
-        return app.metadataCache.getLinkSuggestions().map((s: any) =>{
+        const metadataCache = app.metadataCache as ExtendedMetadataCache
+
+        return metadataCache.getLinkSuggestions().map((s: any) =>{
             const filter: LinkFilter = {type: "link", value: s.path, exists: s.file !== null}
 
             if ('alias' in s) {
@@ -66,11 +72,11 @@ export default class DeskComponent extends React.Component {
     }
 
     getBacklinkSuggestions(): BacklinkFilter[] {
-        const dv = app.plugins.getPlugin('dataview').api
+        const dv = getDataviewAPI(app)
 
         const allPages = dv.pages('""').values
 
-        const withBacklinks = allPages.map(p => p.file).filter((p: any) => p.outlinks.length > 0).map((p: any) => {
+        const withBacklinks = allPages.map((p: any) => p.file).filter((p: any) => p.outlinks.length > 0).map((p: any) => {
             return {
                 type: "backlink",
                 value: p.path,
@@ -81,20 +87,44 @@ export default class DeskComponent extends React.Component {
     }
 
     onQueryChange(filters: Filter[]) {
-        const dv = app.plugins.plugins.dataview.api
-        const dataviewQuery = filtersToDataviewQuery(filters)
-
-        const pages = dv.pages(dataviewQuery).values
         const newState = produce(this.state, draft => {
-            draft.results = pages.map((p: any) =>{
-                return dataviewFileToSearchResult(p.file)
-            })
+            draft.filters = filters
         })
 
         this.setState(newState)
     }
 
     onSortChange(sortOption: MaybeSortOption) {
+        this.setState(produce(this.state, draft => {
+            draft.sort = sortOption
+        }))
+    }
+
+    onAddFilter(filter: Filter) {
+        const newState: DeskViewState = {
+            ...this.state, 
+            filters: [...this.state.filters, filter],
+        }
+
+        this.setState(newState)
+    }
+
+    onRemoveFilter(index: number) {
+        console.log("On Remove Filter")
+        const newFilterList = this.state.filters.slice().splice(index, 1)
+
+        const newState = {
+            ...this.state,
+            filter: newFilterList
+        }
+
+        this.setState(newState)
+    }
+
+    generateResults(): SearchResult[] {
+        const dv = getDataviewAPI(app)
+        const dataviewQuery = filtersToDataviewQuery(this.state.filters)
+
         const sorters: { [key: string]: (a: SearchResult, b: SearchResult) => number} = {
             "modified_date": (a: SearchResult, b: SearchResult) => a.mtime.toMillis() - b.mtime.toMillis(),
             "name": (a: SearchResult, b: SearchResult) => a.title.localeCompare(b.title),
@@ -102,36 +132,34 @@ export default class DeskComponent extends React.Component {
             "backlinks": (a: SearchResult, b: SearchResult) => a.backlinks - b.backlinks,
         }
 
-        if (sortOption !== null) {
-            const newResults = produce(this.state, draft => {
-                const newArray = draft.results.slice()
+        const sortFunction = this.state.sort ? sorters[this.state.sort.type] : sorters["modified_date"]
 
-                let sortFunction = sorters[sortOption.type]
-                if(sortOption.reverse) {
-                    sortFunction = (a, b) => sorters[sortOption.type](b, a)
-                }
-                newArray.sort(sortFunction)
-                draft.results = newArray
-            })
-
-            this.setState(newResults)
-        }
+        const pages = dv.pages(dataviewQuery).values
+        return pages.map((p: any) =>{
+                return dataviewFileToSearchResult(p.file)
+            }).sort(sortFunction)
     }
 
     render() {
+        console.log("Generating search results")
+        const searchResults = this.generateResults()
+        console.log("Done fetching search results")
+
         return <div className="desk__root">
             <div className='desk__search-menu'>
                 <div className='desk__text-search-input-container'>
                     <input type="text" placeholder='Search text' />
                 </div>
                 <FilterMenu 
-                    suggestions={this.state.suggestions} 
-                    onChange={(newFilters) => this.onQueryChange(newFilters)} 
-                    onSortChange={(sortOption) => this.onSortChange(sortOption)} />
+                    filters={this.state.filters}
+                    suggestions={this.state.suggestions}
+                    onSortChange={(sortOption) => this.onSortChange(sortOption)}
+                    addFilter={(f) => { this.onAddFilter(f)}}
+                    removeFilter={(i: number) => { this.onRemoveFilter(i) }} />
             </div>
-            <ResultsDisplay results={this.state.results}></ResultsDisplay>
+            <ResultsDisplay 
+                results={searchResults} 
+                addFilter={(f) => { this.onAddFilter(f)}} />
         </div>
     }
-
-
 }

@@ -1,7 +1,7 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 import { DeskView, VIEW_TYPE_DESK } from 'deskview';
-import { ExtendedMetadataCache } from 'ExtendedObsidian';
+import { ExtendedMetadataCache } from 'src/obsidianprivate';
 
 // Remember to rename these classes and interfaces!
 

@@ -30,7 +30,6 @@ export function NoteCard(props: NoteCardProps) {
 
     useEffect(() => {
         const container = ref.current
-        // MarkdownRenderer.renderMarkdown(body, markdownContainer, props.path, null)
 
         if(container !== null) {
             MarkdownRenderer.renderMarkdown(body, container, props.path, null)

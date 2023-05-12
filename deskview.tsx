@@ -1,5 +1,5 @@
 import { ItemView, WorkspaceLeaf, Vault } from "obsidian"
-import { ExtendedMetadataCache } from "ExtendedObsidian"
+import { ExtendedMetadataCache } from "src/obsidianprivate"
 import * as React from "react"
 import { createRoot, Root } from "react-dom/client"
 

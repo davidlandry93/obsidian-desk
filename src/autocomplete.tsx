@@ -1,6 +1,5 @@
 import React, { ChangeEvent, useEffect, useRef } from 'react'
 import { useState } from 'react'
-import { produce } from 'immer'
 import { Filter, keyOfFilter } from './filter'
 import { FilterChip } from './filterchip'
 import { SortChip } from './sortchip'
@@ -9,32 +8,31 @@ import {MaybeSortOption} from './sortchip'
 
 const MAX_SUGGESTIONS = 50
 
-interface AutocompleteProps {
+interface FilterMenuProps {
+    filters: Filter[]
     suggestions: Filter[]
-    onChange: (newFilters: Filter[]) => void
+    addFilter: (newFilter: Filter) => void
+    removeFilter: (index: number) => void
     onSortChange: (sortOption: MaybeSortOption) => void
 }
 
-export function AutocompleteSearchBox(props: AutocompleteProps) {
+export function FilterMenu(props: FilterMenuProps) {
     const [userInput, setUserInput] = useState('')
     const [showSuggestions, setShowSuggestions] = useState(false)
     const [filteredSuggestions, setFilteredSuggestions] = useState(props.suggestions)
     const [selectedSuggestion, setSelectedSuggestion] = useState(0)
-    const [filters, setFilters] = useState<Filter[]>([])
     const textInputRef = useRef<HTMLInputElement>(null)
 
     function onTextChange(e: ChangeEvent<HTMLInputElement>) {
         setUserInput(e.target.value)
         setShowSuggestions(true)
         setFilteredSuggestions(
-            props.suggestions.filter(s => s.value.toLowerCase().contains(e.target.value.toLowerCase()) && !filters.contains(s))
+            props.suggestions.filter(s => s.value.toLowerCase().contains(e.target.value.toLowerCase()) && !props.filters.contains(s))
         )
     }
 
     function addSuggestion(f: Filter) {
-        setFilters(produce(filters, draft => {
-            draft.push(f)
-        }))
+        props.addFilter(f)
 
         setUserInput('')
         setShowSuggestions(false)
@@ -49,16 +47,12 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
     }
 
     function removeChip(index: number) {
-        setFilters(produce(filters, draft => {
-            draft.splice(index, 1)
-        }))
+        props.removeFilter(index)
     }
 
     const onKeyDown = (e: KeyboardEvent) => {
         if(userInput.length === 0 && e.key === "Backspace" && e.target === textInputRef.current) {
-            setFilters(produce(filters, draft => {
-                draft.pop()
-            }))
+            props.removeFilter(-1)
         }
 
         if(e.key === "Enter" && e.target === textInputRef.current) {
@@ -67,10 +61,6 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
 
         return false
     }
-
-    useEffect(() => {
-        props.onChange(filters)
-    }, [filters])
 
     useEffect(() => {
         if (textInputRef.current) {
@@ -82,7 +72,7 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
                 textInputRef.current.removeEventListener('keydown',onKeyDown) 
             }
         }
-    }, [userInput, filters])
+    })
 
     function suggestionDescription(filter: Filter) {
         if (filter.type === "tag") {
@@ -108,7 +98,7 @@ export function AutocompleteSearchBox(props: AutocompleteProps) {
         </li>
     })
 
-    const chips = filters.map((f, i) =>{
+    const chips = props.filters.map((f, i) =>{
         return <FilterChip filter={f} onClick={() => removeChip(i)} key={keyOfFilter(f)} closeable={true} />
     })
 

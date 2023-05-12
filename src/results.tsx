@@ -3,11 +3,13 @@ import { TFile } from 'obsidian'
 
 import { NoteCard } from './notecard'
 import { SearchResult } from './domain/searchresult'
+import { Filter } from './filter'
 
 const RESULTS_BATCH_SIZE = 20
 
 interface SearchResultsProps {
     results: SearchResult[]
+    addFilter: (filter: Filter) => void
 }
 
 export function ResultsDisplay(props: SearchResultsProps) {
@@ -48,13 +50,29 @@ export function ResultsDisplay(props: SearchResultsProps) {
         const target = e.target
 
         if (target instanceof HTMLElement && target.nodeName === "A") {
+            console.log(target)
             if ('data-href' in target.attributes) {
+                // Internal link. Navigate to that note.
                 e.stopPropagation()
-                const note = app.metadataCache.getFirstLinkpathDest(target.attributes['data-href'].value, "/")
+                const data_href_value = target.attributes.getNamedItem('data-href')
 
-                if (note !== null && note instanceof TFile) {
-                    app.workspace.getLeaf('tab').openFile(note)
+                if (data_href_value) {
+                    const note = app.metadataCache.getFirstLinkpathDest(data_href_value?.value, "/")
+                    if (note !== null && note instanceof TFile) {
+                        app.workspace.getLeaf('tab').openFile(note)
+                    }
                 }
+            } else if (target.classList.contains('tag'))  {
+                // Clicked on tag. Add tag to filters.
+                e.stopPropagation()
+                console.log("Got click on tag.")
+
+                const href = target.attributes.getNamedItem("href") as {value: string}
+
+                props.addFilter({
+                    'type': 'tag',
+                    'value': href.value
+                })
             }
         }
     }
