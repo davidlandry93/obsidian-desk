@@ -38,19 +38,20 @@ export function NoteCard(props: NoteCardProps) {
         }
     }, [body])
 
+    useEffect(() => {
+        function onFetch(fileContents: string) {
+            setBody(fileContents)
+        }
+    
+        if (file instanceof TFile) {
+            const fileContents = app.vault.cachedRead(file)
+            fileContents.then(onFetch)
+        } else {
+            setBody('Error')
+        }
+    }, [])
+
     const file = app.vault.getAbstractFileByPath(props.path)
-
-    function onFetch(fileContents: string) {
-        setBody(fileContents)
-    }
-
-    if (file instanceof TFile) {
-        const fileContents = app.vault.cachedRead(file)
-        fileContents.then(onFetch)
-    } else {
-        setBody('Error')
-    }
-
     const backlinkString = props.backlinks === 1 ? 'backlink' : 'backlinks'
 
     return <div className='desk__note-card'>

@@ -12,6 +12,7 @@
 	"author": "",
 	"license": "MIT",
 	"devDependencies": {
+		"@types/deep-equal": "^1.0.1",
 		"@types/luxon": "^3.3.0",
 		"@types/node": "^16.11.6",
 		"@types/react": "^18.2.5",
@@ -26,6 +27,7 @@
 		"typescript": "4.7.4"
 	},
 	"dependencies": {
+		"deep-equal": "^2.2.1",
 		"immer": "^10.0.1",
 		"lucide-react": "^0.211.0",
 		"luxon": "^3.3.0",

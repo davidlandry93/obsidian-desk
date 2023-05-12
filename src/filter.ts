@@ -1,3 +1,5 @@
+import equal from 'deep-equal'
+
 
 export interface TagFilter {
     type: "tag",
@@ -29,8 +31,6 @@ export interface BacklinkFilter {
 export type Filter = TagFilter | TextFilter | LinkFilter | FolderFilter | BacklinkFilter
 
 function filterToQueryTerm(filter: Filter): string {
-    console.log(filter)
-
     if (filter.type === "tag") {
         return filter.value
     } else if (filter.type === "link") {
@@ -44,8 +44,6 @@ function filterToQueryTerm(filter: Filter): string {
 }
 
 export function filtersToDataviewQuery(filters: Filter[]) {
-    console.log("Filter to query")
-    console.log(filters)
     const query = filters.map(filterToQueryTerm).join(" and ")
 
     return query
@@ -67,4 +65,8 @@ function keyOfLinkFilter(f: LinkFilter) {
     const key = `${f.type}:${aliasTag}${existTag}${keyBody}`
 
     return key
+}
+
+export function filterEqual(a: Filter, b: Filter) {
+    return equal(a, b)
 }

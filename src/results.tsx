@@ -13,15 +13,10 @@ interface SearchResultsProps {
 }
 
 export function ResultsDisplay(props: SearchResultsProps) {
-    console.log("Results Props")
-    console.log(props.results)
-
     const numberResults = props.results.length
     const [numberResultsShown, setNumberResultsShown] = useState(Math.min(RESULTS_BATCH_SIZE, props.results.length))
     const resultDisplayRef = useRef(null)
     const bottomSensorRef = useRef(null)
-
-    console.log(numberResultsShown)
 
     function onIntersect(entries: IntersectionObserverEntry[]) {
         if (entries.some(e => e.isIntersecting)) {
@@ -50,7 +45,6 @@ export function ResultsDisplay(props: SearchResultsProps) {
         const target = e.target
 
         if (target instanceof HTMLElement && target.nodeName === "A") {
-            console.log(target)
             if ('data-href' in target.attributes) {
                 // Internal link. Navigate to that note.
                 e.stopPropagation()
@@ -65,7 +59,6 @@ export function ResultsDisplay(props: SearchResultsProps) {
             } else if (target.classList.contains('tag'))  {
                 // Clicked on tag. Add tag to filters.
                 e.stopPropagation()
-                console.log("Got click on tag.")
 
                 const href = target.attributes.getNamedItem("href") as {value: string}
 

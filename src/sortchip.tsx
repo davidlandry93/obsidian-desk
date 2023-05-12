@@ -73,7 +73,7 @@ export function SortChip(props: SortChipProps) {
         </ul>
     </div>
 
-    const orderIcon = props.sort && props.sort.reverse ? <ArrowDownAZ className="desk__chip-icon" /> : <ArrowUpAZ className="desk__chip-icon"/>
+    const orderIcon = props.sort && !props.sort.reverse ? <ArrowDownAZ className="desk__chip-icon" /> : <ArrowUpAZ className="desk__chip-icon"/>
     
 
     return <div className='desk__sort-chip-container'>

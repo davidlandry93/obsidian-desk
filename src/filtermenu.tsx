@@ -1,6 +1,6 @@
 import React, { ChangeEvent, useEffect, useRef } from 'react'
 import { useState } from 'react'
-import { Filter, keyOfFilter } from './filter'
+import { Filter, keyOfFilter, filterEqual } from './filter'
 import { FilterChip } from './filterchip'
 import { SortChip } from './sortchip'
 import { ListFilter } from 'lucide-react'
@@ -24,11 +24,19 @@ export function FilterMenu(props: FilterMenuProps) {
     const [selectedSuggestion, setSelectedSuggestion] = useState(0)
     const textInputRef = useRef<HTMLInputElement>(null)
 
+    const [filters, setFilters] = useState(props.filters)
+
+    useEffect(() => {
+        console.log("Use effect on filters!")
+        setFilters(props.filters)
+    }, [props.filters])
+
     function onTextChange(e: ChangeEvent<HTMLInputElement>) {
         setUserInput(e.target.value)
         setShowSuggestions(true)
+
         setFilteredSuggestions(
-            props.suggestions.filter(s => s.value.toLowerCase().contains(e.target.value.toLowerCase()) && !props.filters.contains(s))
+            props.suggestions.filter(s => s.value.toLowerCase().contains(e.target.value.toLowerCase()) && !filters.some((a) => filterEqual(a, s)))
         )
     }
 
@@ -48,11 +56,12 @@ export function FilterMenu(props: FilterMenuProps) {
     }
 
     function removeChip(index: number) {
+        console.log("Called removeChip inside autocomplete.")
         props.removeFilter(index)
     }
 
     const onKeyDown = (e: KeyboardEvent) => {
-        if(userInput.length === 0 && e.key === "Backspace" && e.target === textInputRef.current) {
+        if(userInput.length === 0 && e.key === "Backspace" && e.target === textInputRef.current && filters.length > 0) {
             props.removeFilter(-1)
         }
 
@@ -99,7 +108,7 @@ export function FilterMenu(props: FilterMenuProps) {
         </li>
     })
 
-    const chips = props.filters.map((f, i) =>{
+    const chips = filters.map((f, i) =>{
         return <FilterChip filter={f} onClick={() => removeChip(i)} key={keyOfFilter(f)} closeable={true} />
     })
 

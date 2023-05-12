@@ -3,7 +3,7 @@ import { produce } from 'immer'
 import { getDataviewAPI } from './dataview'
 
 
-import { FilterMenu as FilterMenu } from './autocomplete'
+import { FilterMenu as FilterMenu } from './filtermenu'
 import { BacklinkFilter, Filter, FolderFilter, LinkFilter, filtersToDataviewQuery } from './filter'
 import { ResultsDisplay } from './results'
 import { SearchResult, dataviewFileToSearchResult } from './domain/searchresult'
@@ -87,7 +87,6 @@ export default class DeskComponent extends React.Component {
     }
 
     onSortChange(sortOption: MaybeSortOption) {
-        console.log("Sorting changed")
         this.setState(produce(this.state, draft => {
             draft.sort = sortOption
         }))
@@ -104,12 +103,17 @@ export default class DeskComponent extends React.Component {
 
     onRemoveFilter(index: number) {
         console.log("On Remove Filter")
-        const newFilterList = this.state.filters.slice().splice(index, 1)
+        const newFilterList = this.state.filters.slice()
+        newFilterList.splice(index, 1)
+
+        console.log("From", this.state.filters, "to", newFilterList)
 
         const newState = {
             ...this.state,
-            filter: newFilterList
+            filters: newFilterList,
         }
+
+        console.log(newState)
 
         this.setState(newState)
     }
@@ -126,17 +130,16 @@ export default class DeskComponent extends React.Component {
         }
 
         const sortFunction = this.state.sort ? sorters[this.state.sort.type] : sorters["modified_date"]
+        const reversedSortFunction = this.state.sort && this.state.sort.reverse ? (a: SearchResult, b: SearchResult) => sortFunction(b, a) : sortFunction
 
         const pages = dv.pages(dataviewQuery).values
         return pages.map((p: any) =>{
                 return dataviewFileToSearchResult(p.file)
-            }).sort(sortFunction)
+            }).sort(reversedSortFunction)
     }
 
     render() {
-        console.log("Generating search results")
         const searchResults = this.generateResults()
-        console.log("Done fetching search results")
 
         return <div className="desk__root">
             <div className='desk__search-menu'>
