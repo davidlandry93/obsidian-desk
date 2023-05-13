@@ -37,9 +37,23 @@ export function FilterMenu(props: FilterMenuProps) {
         setUserInput(e.target.value)
         setShowSuggestions(true)
 
-        setFilteredSuggestions(
-            props.suggestions.filter(s => s.value.toLowerCase().contains(e.target.value.toLowerCase()) && !filters.some((a) => filterEqual(a, s)))
-        )
+        const textSuggestion: Filter = {
+            type: "text",
+            value: e.target.value,
+            reversed: false,
+        }
+
+        const otherSuggestions =  props.suggestions.filter(s => s.value.toLowerCase().contains(e.target.value.toLowerCase()) && !filters.some((a) => filterEqual(a, s)))
+
+        if(e.target.value !== "") {
+            setFilteredSuggestions(
+                [textSuggestion, ...otherSuggestions]
+             )
+        } else {
+            setFilteredSuggestions(
+                [...otherSuggestions]
+             )           
+        }
     }
 
     function addSuggestion(f: Filter) {
@@ -101,12 +115,8 @@ export function FilterMenu(props: FilterMenuProps) {
         }
     }
 
-    const textSuggestion: Filter = {
-        type: "text",
-        value: userInput,
-        reversed: false,
-    }
-    const suggestionComponents = [textSuggestion, ...filteredSuggestions].slice(0, MAX_SUGGESTIONS).map((suggestion, index) => { 
+
+    const suggestionComponents = filteredSuggestions.slice(0, MAX_SUGGESTIONS).map((suggestion, index) => { 
         return <li key={keyOfFilter(suggestion)} className={`desk__dropdown-list-item`}>
             <a 
             className={`${index === selectedSuggestion ? 'selected' : ''}`}

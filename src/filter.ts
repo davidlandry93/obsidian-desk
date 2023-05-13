@@ -26,6 +26,7 @@ export interface LinkFilter {
 
 export type Filter = BasicFilter | LinkFilter | TextFilter
 
+
 function filterToQueryTerm(filter: Filter): string {
     let baseString = ''
 
@@ -38,8 +39,7 @@ function filterToQueryTerm(filter: Filter): string {
     } else if (filter.type === "backlink") {
         baseString = `outgoing([[${filter.value}]])`
     } else if (filter.type === "text"){
-        // Text filters have to be handled later, after the dataview query.
-        return ""
+        throw new Error("Text filters should not be included in dataview queries")
     } else {
         throw new Error("Unhandled filter type")
     }
@@ -97,5 +97,5 @@ export async function fileMatchesFilter(file: DataviewFile, filter: Filter): Pro
 }
 
 export function fileContentMatchesTextFilter(fileContent: string, filter: TextFilter): boolean {
-    return fileContent.contains(filter.value)
+    return fileContent.toLowerCase().contains(filter.value.toLowerCase())
 }

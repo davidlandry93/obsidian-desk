@@ -14,14 +14,6 @@ import { TFile } from 'obsidian'
 import { DataviewFile } from './dataview'
 
 
-interface DeskComponentState {
-    suggestions: Filter[]
-    filters: Filter[]
-    sort: MaybeSortOption
-
-    results: SearchResult[]
-}
-
 function getTagSuggestions(): Filter[] {
     const metadataCache = getMetadataCache(app)
     return Object.keys(metadataCache.getTags()).map((t) => {return {type: "tag", value: t, key: t, reversed: false}})
@@ -84,27 +76,46 @@ function getAllSuggestions(): Filter[] {
     return suggestions.sort(suggestionOrder)
 }
 
+interface DeskComponentState {
+    filters: Filter[]
+    sort: MaybeSortOption
+}
+
 
 export function DeskComponent() {
     const [state, setState] = useState<DeskComponentState>({
         filters: [],
         sort: null,
-        suggestions: getAllSuggestions(),
-        results: []
     })
+
+    const [suggestions, setSuggestions] = useState<Filter[]>(getAllSuggestions())
+
+    // Was not intended to be set directly. The idea is to set the filters and the sort.
+    // Then, the effect listening on state should update the search result list.
+    // We need that little hoop because we need to filter the results in an async manner.
+    const [searchResults, setSearchResults] = useState<SearchResult[]>([])
 
     useEffect(() => {
         const createListenerEventRef = app.vault.on('create', () => {
-            setState({
-                ...state,
-                suggestions: getAllSuggestions()
-            })
+            setSuggestions(getAllSuggestions())
         })
 
         return () => {
             app.vault.offref(createListenerEventRef)
         }
     })
+
+    useEffect(() => {
+        const unfilteredSearchResults = generateResults()
+
+        // Text filters need to be applied manually, they cannot be realized only with a Dataview page query.
+        const textFilters = state.filters.filter(f => f.type === "text") as TextFilter[]
+        const maskPromise = unfilteredSearchResults.map((p) => applyTextFilters(p.path, textFilters))
+
+        Promise.all(maskPromise).then((mask) => {
+            setSearchResults(unfilteredSearchResults.filter((v, i) => mask[i]))
+        })
+    }, [state])
 
     function onSortChange(sortOption: MaybeSortOption) {
         setState(produce(state, draft => {
@@ -166,7 +177,9 @@ export function DeskComponent() {
 
     function generateResults(): SearchResult[] {
         const dv = getDataviewAPI(app)
-        const dataviewQuery = filtersToDataviewQuery(state.filters)
+
+        console.log(state.filters)
+        const dataviewQuery = filtersToDataviewQuery(state.filters.filter(f => f.type != "text"))
 
         const sorters: { [key: string]: (a: SearchResult, b: SearchResult) => number} = {
             "modified_date": (a: SearchResult, b: SearchResult) => a.mtime.toMillis() - b.mtime.toMillis(),
@@ -180,19 +193,15 @@ export function DeskComponent() {
 
         const pages: {file: DataviewFile}[] = dv.pages(dataviewQuery).values
 
-        // Text filters need to be applied manually, they cannot be realized only with a Dataview page query.
-        const textFilters = state.filters.filter(f => f.type === "text") as TextFilter[]
-        const pagesTextFiltered = pages.filter((p) => applyTextFilters(p.file, textFilters))
-
-        const results = pagesTextFiltered.map((p: any) =>{
+        const results = pages.map((p: any) =>{
             return dataviewFileToSearchResult(p.file)
         }).sort(reversedSortFunction)
 
         return results
     }
 
-    async function applyTextFilters(page: DataviewFile, filters: TextFilter[]): Promise<boolean> {
-        const fileHandle = app.vault.getAbstractFileByPath(page.path)
+    async function applyTextFilters(path: string, filters: TextFilter[]): Promise<boolean> {
+        const fileHandle = app.vault.getAbstractFileByPath(path)
 
         if (fileHandle instanceof TFile) {
             const fileContent = await app.vault.cachedRead(fileHandle)
@@ -210,9 +219,6 @@ export function DeskComponent() {
         throw new Error("unexpected type when reading file")
     }
 
-
-    const searchResults = generateResults()
-
     return <div className="desk__root">
         <div className='desk__search-menu'>
             <div className='desk__text-search-input-container'>
@@ -220,7 +226,7 @@ export function DeskComponent() {
             </div>
             <FilterMenu 
                 filters={state.filters}
-                suggestions={state.suggestions}
+                suggestions={suggestions}
                 sort={state.sort}
                 onSortChange={(sortOption) => onSortChange(sortOption)}
                 addFilter={(f) => { onAddFilter(f)}}
