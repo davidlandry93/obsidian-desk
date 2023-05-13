@@ -95,7 +95,7 @@ export function NoteCard(props: NoteCardProps) {
             </div>
             <div className={`desk__search-result-content ${overflowingClass} ${expandedClass}`} ref={contentRef} style={contentStyle}></div>
             <div className='desk__note-card-footer'>
-                { props.folder === '' ? null : <span><Folder className="desk__note-card-header-details-icon" />{props.folder}</span> }
+                { props.folder === '' ? null : <span><Folder className="desk__note-card-header-details-icon" /><a onClick={() => {props.setFilters([{type: "folder", reversed: false, value: props.folder}])}}>{props.folder}</a></span> }
                 <span><FileInput className="desk__note-card-header-details-icon" /><a onClick={() => {props.setFilters([{type: "link", reversed: false, value: props.path, exists: true}])}}>{`${props.backlinks} ${backlinkString}`}</a></span>
                 <span><Clock className="desk__note-card-header-details-icon" />Modified on { props.date.toLocaleString(DateTime.DATE_SHORT) }</span>
             </div>

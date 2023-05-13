@@ -10,6 +10,7 @@ import { SearchResult, dataviewFileToSearchResult } from './domain/searchresult'
 import { MaybeSortOption } from './sortchip'
 import { ExtendedMetadataCache } from 'src/obsidianprivate'
 import { getMetadataCache } from './obsidian'
+import { EventRef } from 'obsidian'
 
 
 interface DeskViewState {
@@ -20,6 +21,7 @@ interface DeskViewState {
 
 export default class DeskComponent extends React.Component {
     state: DeskViewState
+    createListenerRef: EventRef | null = null
 
     constructor(props: never) {
         super(props)
@@ -28,6 +30,21 @@ export default class DeskComponent extends React.Component {
             filters: [],
             sort: null,
             suggestions: this.getAllSuggestions()
+        }
+    }
+
+    componentDidMount() {
+        this.createListenerRef = app.vault.on('create', () => {
+            this.setState({
+                ...this.state,
+                suggestions: this.getAllSuggestions()
+            })
+        })
+    }
+
+    componentWillUnmount() {
+        if (this.createListenerRef) {
+            app.vault.offref(this.createListenerRef)
         }
     }
 

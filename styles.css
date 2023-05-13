@@ -33,6 +33,7 @@
     min-height: 400px;
     background-color: var(--background-primary-alt);
     padding-bottom: 30px;
+    user-select: text;
 }
 
 .desk__note-card h3 {
