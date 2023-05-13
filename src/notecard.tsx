@@ -37,6 +37,7 @@ export function NoteCard(props: NoteCardProps) {
         const container = contentRef.current
 
         if(container !== null) {
+            container.innerHTML = ''
             MarkdownRenderer.renderMarkdown(body, container, props.path, null).then(() => {
                 checkOverflow(container)
             })
@@ -55,17 +56,28 @@ export function NoteCard(props: NoteCardProps) {
     }
 
     useEffect(() => {
-        function onFetch(fileContents: string) {
-            setBody(fileContents)
-        }
-    
         if (file instanceof TFile) {
             const fileContents = app.vault.cachedRead(file)
-            fileContents.then(onFetch)
+            fileContents.then(setBody)
         } else {
             setBody('Error')
         }
     }, [])
+
+    // Monitor modifications on that file.
+    useEffect(() => {
+        const callbackRef = app.vault.on("modify", (file) => {
+            if(file.path === props.path) {
+                if (file instanceof TFile) {
+                    app.vault.cachedRead(file).then(setBody)
+                }
+            }
+        })
+
+        return () => {
+            app.vault.offref(callbackRef)
+        }
+    })
 
     function onClick() {
         setExpanded(!expanded)
@@ -76,7 +88,6 @@ export function NoteCard(props: NoteCardProps) {
     const overflowingClass = overflowing && !expanded ? 'overflowing' : ''
     const expandedClass = expanded ? 'expanded' : ''
     const contentStyle = expanded && contentRef.current ? {maxHeight: contentRef.current.scrollHeight} : {}
-
 
     return <div className='desk__note-card' onClick={() => { onClick() }}>
             <div className='desk__note-card-header'>
