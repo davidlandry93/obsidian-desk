@@ -94,12 +94,19 @@ export function FilterMenu(props: FilterMenuProps) {
             return <span>Links to <FilterChip filter={filter} closeable={false} /></span>;
         } else if (filter.type === "backlink") {
             return <span>Is linked by <FilterChip filter={filter} closeable={false} /></span>
+        } else if (filter.type === "text") {
+            return <span>Contains text <FilterChip filter={filter} closeable={false}></FilterChip></span>
         } else { 
             throw new Error("Unknown filter type when generating description text.")
         }
     }
 
-    const suggestionComponents = filteredSuggestions.slice(0, MAX_SUGGESTIONS).map((suggestion, index) => { 
+    const textSuggestion: Filter = {
+        type: "text",
+        value: userInput,
+        reversed: false,
+    }
+    const suggestionComponents = [textSuggestion, ...filteredSuggestions].slice(0, MAX_SUGGESTIONS).map((suggestion, index) => { 
         return <li key={keyOfFilter(suggestion)} className={`desk__dropdown-list-item`}>
             <a 
             className={`${index === selectedSuggestion ? 'selected' : ''}`}
@@ -119,7 +126,7 @@ export function FilterMenu(props: FilterMenuProps) {
     </div>
 
     const suggestionContents = <div className='desk__dropdown'>
-        { filteredSuggestions.length > 0 ? suggestionList : <p>No filter match your query</p> }
+        {suggestionList}
     </div>
 
     return (

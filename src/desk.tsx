@@ -1,22 +1,25 @@
-import * as React from 'react'
+import React from 'react'
 import { produce } from 'immer'
 import { getDataviewAPI } from './dataview'
 
 
 import { FilterMenu as FilterMenu } from './filtermenu'
-import { BasicFilter, Filter, LinkFilter, filterEqual, filtersToDataviewQuery } from './filter'
+import { BasicFilter, Filter, LinkFilter, TextFilter, filterEqual, filtersToDataviewQuery } from './filter'
 import { ResultsDisplay } from './results'
 import { SearchResult, dataviewFileToSearchResult } from './domain/searchresult'
 import { MaybeSortOption } from './sortchip'
 import { ExtendedMetadataCache } from 'src/obsidianprivate'
 import { getMetadataCache } from './obsidian'
-import { EventRef } from 'obsidian'
+import { EventRef, TFile } from 'obsidian'
+import { DataviewFile } from './dataview'
 
 
 interface DeskViewState {
     suggestions: Filter[]
     filters: Filter[]
     sort: MaybeSortOption
+
+    results: SearchResult[]
 }
 
 export default class DeskComponent extends React.Component {
@@ -29,7 +32,8 @@ export default class DeskComponent extends React.Component {
         this.state = {
             filters: [],
             sort: null,
-            suggestions: this.getAllSuggestions()
+            suggestions: this.getAllSuggestions(),
+            results: []
         }
     }
 
@@ -53,9 +57,14 @@ export default class DeskComponent extends React.Component {
             ...this.getTagSuggestions(), 
             ...this.getLinkSuggestions(), 
             ...this.getFolderSuggestions(), 
-            ...this.getBacklinkSuggestions()
+            ...this.getBacklinkSuggestions(),
         ]
-        return suggestions.sort((a, b) => a.value.length - b.value.length)
+
+        const suggestionOrder = (a: Filter, b: Filter) => {
+            return a.value.length - b.value.length
+        }
+
+        return suggestions.sort(suggestionOrder)
     }
 
     getTagSuggestions(): Filter[] {
@@ -176,10 +185,36 @@ export default class DeskComponent extends React.Component {
         const sortFunction = this.state.sort ? sorters[this.state.sort.type] : sorters["modified_date"]
         const reversedSortFunction = this.state.sort && this.state.sort.reverse ? (a: SearchResult, b: SearchResult) => sortFunction(b, a) : sortFunction
 
-        const pages = dv.pages(dataviewQuery).values
-        return pages.map((p: any) =>{
-                return dataviewFileToSearchResult(p.file)
-            }).sort(reversedSortFunction)
+        const pages: {file: DataviewFile}[] = dv.pages(dataviewQuery).values
+
+        // Text filters need to be applied manually, they cannot be realized only with a Dataview page query.
+        const textFilters = this.state.filters.filter(f => f.type === "text") as TextFilter[]
+        const pagesTextFiltered = pages.filter((p) => this.applyTextFilters(p.file, textFilters))
+
+        const results = pagesTextFiltered.map((p: any) =>{
+            return dataviewFileToSearchResult(p.file)
+        }).sort(reversedSortFunction)
+
+        return results
+    }
+
+    async applyTextFilters(page: DataviewFile, filters: TextFilter[]): Promise<boolean> {
+        const fileHandle = app.vault.getAbstractFileByPath(page.path)
+
+        if (fileHandle instanceof TFile) {
+            const fileContent = await app.vault.cachedRead(fileHandle)
+
+            for (const f of filters) {
+                if (f.reversed == fileContent.contains(f.value)) {
+                    // If reversed is equal to contains, then the file does not match the filter.
+                    return false
+                }
+            }
+
+            return true
+        }
+
+        throw new Error("unexpected type when reading file")
     }
 
     render() {
