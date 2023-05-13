@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useState, useEffect} from 'react'
 import { produce } from 'immer'
 import { getDataviewAPI } from './dataview'
 
@@ -10,11 +10,11 @@ import { SearchResult, dataviewFileToSearchResult } from './domain/searchresult'
 import { MaybeSortOption } from './sortchip'
 import { ExtendedMetadataCache } from 'src/obsidianprivate'
 import { getMetadataCache } from './obsidian'
-import { EventRef, TFile } from 'obsidian'
+import { TFile } from 'obsidian'
 import { DataviewFile } from './dataview'
 
 
-interface DeskViewState {
+interface DeskComponentState {
     suggestions: Filter[]
     filters: Filter[]
     sort: MaybeSortOption
@@ -22,158 +22,151 @@ interface DeskViewState {
     results: SearchResult[]
 }
 
-export default class DeskComponent extends React.Component {
-    state: DeskViewState
-    createListenerRef: EventRef | null = null
+function getTagSuggestions(): Filter[] {
+    const metadataCache = getMetadataCache(app)
+    return Object.keys(metadataCache.getTags()).map((t) => {return {type: "tag", value: t, key: t, reversed: false}})
+}
 
-    constructor(props: never) {
-        super(props)
-
-        this.state = {
-            filters: [],
-            sort: null,
-            suggestions: this.getAllSuggestions(),
-            results: []
+function getFolderSuggestions(): BasicFilter[] {
+    const folderPaths = app.vault.getAllLoadedFiles().filter(f => ('children' in f) && f.path !== '/').map(f => f.path)
+    return folderPaths.map((p) => {
+        return {
+            type: 'folder',
+            value: p,
+            key: p,
+            reversed: false,
         }
+    })
+}
+
+function getLinkSuggestions(): LinkFilter[] {
+    const metadataCache = app.metadataCache as ExtendedMetadataCache
+
+    return metadataCache.getLinkSuggestions().map((s: any) =>{
+        const filter: LinkFilter = {type: "link", value: s.path, exists: s.file !== null, reversed: false}
+
+        if ('alias' in s) {
+            filter.alias = s.alias
+        }
+
+        return filter
+    })
+}
+
+function getBacklinkSuggestions(): BasicFilter[] {
+    const dv = getDataviewAPI(app)
+
+    const allPages = dv.pages('""').values
+
+    const withBacklinks = allPages.map((p: any) => p.file).filter((p: any) => p.outlinks.length > 0).map((p: any) => {
+        return {
+            type: "backlink",
+            value: p.path,
+            key: p.path
+        }
+    })
+    return withBacklinks
+}
+
+
+function getAllSuggestions(): Filter[] {
+    const suggestions = [
+        ...getTagSuggestions(), 
+        ...getLinkSuggestions(), 
+        ...getFolderSuggestions(), 
+        ...getBacklinkSuggestions(),
+    ]
+
+    const suggestionOrder = (a: Filter, b: Filter) => {
+        return a.value.length - b.value.length
     }
 
-    componentDidMount() {
-        this.createListenerRef = app.vault.on('create', () => {
-            this.setState({
-                ...this.state,
-                suggestions: this.getAllSuggestions()
+    return suggestions.sort(suggestionOrder)
+}
+
+
+export function DeskComponent() {
+    const [state, setState] = useState<DeskComponentState>({
+        filters: [],
+        sort: null,
+        suggestions: getAllSuggestions(),
+        results: []
+    })
+
+    useEffect(() => {
+        const createListenerEventRef = app.vault.on('create', () => {
+            setState({
+                ...state,
+                suggestions: getAllSuggestions()
             })
         })
-    }
 
-    componentWillUnmount() {
-        if (this.createListenerRef) {
-            app.vault.offref(this.createListenerRef)
+        return () => {
+            app.vault.offref(createListenerEventRef)
         }
-    }
+    })
 
-    getAllSuggestions(): Filter[] {
-        const suggestions = [
-            ...this.getTagSuggestions(), 
-            ...this.getLinkSuggestions(), 
-            ...this.getFolderSuggestions(), 
-            ...this.getBacklinkSuggestions(),
-        ]
-
-        const suggestionOrder = (a: Filter, b: Filter) => {
-            return a.value.length - b.value.length
-        }
-
-        return suggestions.sort(suggestionOrder)
-    }
-
-    getTagSuggestions(): Filter[] {
-        const metadataCache = getMetadataCache(app)
-        return Object.keys(metadataCache.getTags()).map((t) => {return {type: "tag", value: t, key: t, reversed: false}})
-    }
-
-    getFolderSuggestions(): BasicFilter[] {
-        const folderPaths = app.vault.getAllLoadedFiles().filter(f => ('children' in f) && f.path !== '/').map(f => f.path)
-        return folderPaths.map((p) => {
-            return {
-                type: 'folder',
-                value: p,
-                key: p,
-                reversed: false,
-            }
-        })
-    }
-
-    getLinkSuggestions(): LinkFilter[] {
-        const metadataCache = app.metadataCache as ExtendedMetadataCache
-
-        return metadataCache.getLinkSuggestions().map((s: any) =>{
-            const filter: LinkFilter = {type: "link", value: s.path, exists: s.file !== null, reversed: false}
-
-            if ('alias' in s) {
-                filter.alias = s.alias
-            }
-
-            return filter
-        })
-    }
-
-    getBacklinkSuggestions(): BasicFilter[] {
-        const dv = getDataviewAPI(app)
-
-        const allPages = dv.pages('""').values
-
-        const withBacklinks = allPages.map((p: any) => p.file).filter((p: any) => p.outlinks.length > 0).map((p: any) => {
-            return {
-                type: "backlink",
-                value: p.path,
-                key: p.path
-            }
-        })
-        return withBacklinks
-    }
-
-    onSortChange(sortOption: MaybeSortOption) {
-        this.setState(produce(this.state, draft => {
+    function onSortChange(sortOption: MaybeSortOption) {
+        setState(produce(state, draft => {
             draft.sort = sortOption
         }))
     }
 
-    onAddFilter(filter: Filter) {
-        if (!this.state.filters.some(f => filterEqual(filter, f))) {
-            const newState: DeskViewState = {
-                ...this.state, 
-                filters: [...this.state.filters, filter],
+    function onAddFilter(filter: Filter) {
+        if (!state.filters.some(f => filterEqual(filter, f))) {
+            const newState = {
+                ...state, 
+                filters: [...state.filters, filter],
             }
     
-            this.setState(newState)
+            setState(newState)
         }
     }
 
-    onSetFilters(filters: Filter[]) {
-        const newState: DeskViewState = {
-            ...this.state,
+    function onSetFilters(filters: Filter[]) {
+        const newState = {
+            ...state,
             filters: filters
         }
 
-        this.setState(newState)
+        setState(newState)
     }
 
-    onRemoveFilter(index: number) {
+    function onRemoveFilter(index: number) {
         console.log("On Remove Filter")
-        const newFilterList = this.state.filters.slice()
+        const newFilterList = state.filters.slice()
         newFilterList.splice(index, 1)
 
-        console.log("From", this.state.filters, "to", newFilterList)
+        console.log("From", state.filters, "to", newFilterList)
 
         const newState = {
-            ...this.state,
+            ...state,
             filters: newFilterList,
         }
 
         console.log(newState)
 
-        this.setState(newState)
+        setState(newState)
     }
 
-    reverseFilter(filter: Filter) {
-        const newFilters = this.state.filters.slice()
+    function reverseFilter(filter: Filter) {
+        const newFilters = state.filters.slice()
 
-        const filterIndex = this.state.filters.indexOf(filter)
+        const filterIndex = state.filters.indexOf(filter)
         newFilters[filterIndex]= {
             ...filter,
             reversed: !filter.reversed
         }
 
-        this.setState({
-            ...this.state,
+        setState({
+            ...state,
             filters: newFilters
         })
     }
 
-    generateResults(): SearchResult[] {
+    function generateResults(): SearchResult[] {
         const dv = getDataviewAPI(app)
-        const dataviewQuery = filtersToDataviewQuery(this.state.filters)
+        const dataviewQuery = filtersToDataviewQuery(state.filters)
 
         const sorters: { [key: string]: (a: SearchResult, b: SearchResult) => number} = {
             "modified_date": (a: SearchResult, b: SearchResult) => a.mtime.toMillis() - b.mtime.toMillis(),
@@ -182,14 +175,14 @@ export default class DeskComponent extends React.Component {
             "backlinks": (a: SearchResult, b: SearchResult) => a.backlinks - b.backlinks,
         }
 
-        const sortFunction = this.state.sort ? sorters[this.state.sort.type] : sorters["modified_date"]
-        const reversedSortFunction = this.state.sort && this.state.sort.reverse ? (a: SearchResult, b: SearchResult) => sortFunction(b, a) : sortFunction
+        const sortFunction = state.sort ? sorters[state.sort.type] : sorters["modified_date"]
+        const reversedSortFunction = state.sort && state.sort.reverse ? (a: SearchResult, b: SearchResult) => sortFunction(b, a) : sortFunction
 
         const pages: {file: DataviewFile}[] = dv.pages(dataviewQuery).values
 
         // Text filters need to be applied manually, they cannot be realized only with a Dataview page query.
-        const textFilters = this.state.filters.filter(f => f.type === "text") as TextFilter[]
-        const pagesTextFiltered = pages.filter((p) => this.applyTextFilters(p.file, textFilters))
+        const textFilters = state.filters.filter(f => f.type === "text") as TextFilter[]
+        const pagesTextFiltered = pages.filter((p) => applyTextFilters(p.file, textFilters))
 
         const results = pagesTextFiltered.map((p: any) =>{
             return dataviewFileToSearchResult(p.file)
@@ -198,7 +191,7 @@ export default class DeskComponent extends React.Component {
         return results
     }
 
-    async applyTextFilters(page: DataviewFile, filters: TextFilter[]): Promise<boolean> {
+    async function applyTextFilters(page: DataviewFile, filters: TextFilter[]): Promise<boolean> {
         const fileHandle = app.vault.getAbstractFileByPath(page.path)
 
         if (fileHandle instanceof TFile) {
@@ -217,27 +210,26 @@ export default class DeskComponent extends React.Component {
         throw new Error("unexpected type when reading file")
     }
 
-    render() {
-        const searchResults = this.generateResults()
 
-        return <div className="desk__root">
-            <div className='desk__search-menu'>
-                <div className='desk__text-search-input-container'>
-                    <input type="text" placeholder='Search text' />
-                </div>
-                <FilterMenu 
-                    filters={this.state.filters}
-                    suggestions={this.state.suggestions}
-                    sort={this.state.sort}
-                    onSortChange={(sortOption) => this.onSortChange(sortOption)}
-                    addFilter={(f) => { this.onAddFilter(f)}}
-                    removeFilter={(i: number) => { this.onRemoveFilter(i) }}
-                    reverseFilter={(f) => { this.reverseFilter(f) }} />
+    const searchResults = generateResults()
+
+    return <div className="desk__root">
+        <div className='desk__search-menu'>
+            <div className='desk__text-search-input-container'>
+                <input type="text" placeholder='Search text' />
             </div>
-            <ResultsDisplay 
-                results={searchResults} 
-                addFilter={(f) => { this.onAddFilter(f)}}
-                setFilters={(f) => { this.onSetFilters(f) }} />
+            <FilterMenu 
+                filters={state.filters}
+                suggestions={state.suggestions}
+                sort={state.sort}
+                onSortChange={(sortOption) => onSortChange(sortOption)}
+                addFilter={(f) => { onAddFilter(f)}}
+                removeFilter={(i: number) => { onRemoveFilter(i) }}
+                reverseFilter={(f) => { reverseFilter(f) }} />
         </div>
-    }
+        <ResultsDisplay 
+            results={searchResults} 
+            addFilter={(f) => { onAddFilter(f)}}
+            setFilters={(f) => { onSetFilters(f) }} />
+    </div>
 }

@@ -5,7 +5,7 @@ import { createRoot, Root } from "react-dom/client"
 
 export const VIEW_TYPE_DESK = "desk-view"
 
-import DeskComponent from './src/desk'
+import { DeskComponent } from './src/desk'
 import { ObsidianContext } from './src/obsidiancontext'
 
 
