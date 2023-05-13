@@ -1,10 +1,11 @@
-import React, {useContext, useState, useEffect, useRef, useLayoutEffect, CSSProperties} from 'react'
+import React, {useContext, useState, useEffect, useRef} from 'react'
 
 import { ObsidianContext } from './obsidiancontext'
 import { App, TFile, MarkdownRenderer } from 'obsidian'
 import { Clock, FileInput, Folder } from 'lucide-react'
 import { DateTime } from 'luxon'
 
+import { Filter } from './filter'
 
 function navigateToNote(path: string, app: App) {
     const note = app.vault.getAbstractFileByPath(path)
@@ -20,6 +21,7 @@ interface NoteCardProps {
     folder: string,
     backlinks: number,
     date: DateTime
+    setFilters: (filters: Filter[]) => void
 }
 
 
@@ -83,7 +85,7 @@ export function NoteCard(props: NoteCardProps) {
             <div className={`desk__search-result-content ${overflowingClass} ${expandedClass}`} ref={contentRef} style={contentStyle}></div>
             <div className='desk__note-card-footer'>
                 { props.folder === '' ? null : <span><Folder className="desk__note-card-header-details-icon" />{props.folder}</span> }
-                <span><FileInput className="desk__note-card-header-details-icon" />{`${props.backlinks} ${backlinkString}`}</span>
+                <span><FileInput className="desk__note-card-header-details-icon" /><a onClick={() => {props.setFilters([{type: "link", reversed: false, value: props.path, exists: true}])}}>{`${props.backlinks} ${backlinkString}`}</a></span>
                 <span><Clock className="desk__note-card-header-details-icon" />Modified on { props.date.toLocaleString(DateTime.DATE_SHORT) }</span>
             </div>
         </div>

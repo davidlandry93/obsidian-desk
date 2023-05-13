@@ -4,7 +4,7 @@ import { getDataviewAPI } from './dataview'
 
 
 import { FilterMenu as FilterMenu } from './filtermenu'
-import { BasicFilter, Filter, LinkFilter, filtersToDataviewQuery } from './filter'
+import { BasicFilter, Filter, LinkFilter, filterEqual, filtersToDataviewQuery } from './filter'
 import { ResultsDisplay } from './results'
 import { SearchResult, dataviewFileToSearchResult } from './domain/searchresult'
 import { MaybeSortOption } from './sortchip'
@@ -94,9 +94,20 @@ export default class DeskComponent extends React.Component {
     }
 
     onAddFilter(filter: Filter) {
+        if (!this.state.filters.some(f => filterEqual(filter, f))) {
+            const newState: DeskViewState = {
+                ...this.state, 
+                filters: [...this.state.filters, filter],
+            }
+    
+            this.setState(newState)
+        }
+    }
+
+    onSetFilters(filters: Filter[]) {
         const newState: DeskViewState = {
-            ...this.state, 
-            filters: [...this.state.filters, filter],
+            ...this.state,
+            filters: filters
         }
 
         this.setState(newState)
@@ -173,7 +184,8 @@ export default class DeskComponent extends React.Component {
             </div>
             <ResultsDisplay 
                 results={searchResults} 
-                addFilter={(f) => { this.onAddFilter(f)}} />
+                addFilter={(f) => { this.onAddFilter(f)}}
+                setFilters={(f) => { this.onSetFilters(f) }} />
         </div>
     }
 }

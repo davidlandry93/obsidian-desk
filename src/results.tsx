@@ -10,6 +10,7 @@ const RESULTS_BATCH_SIZE = 20
 interface SearchResultsProps {
     results: SearchResult[]
     addFilter: (filter: Filter) => void
+    setFilters: (filters: Filter[]) => void
 }
 
 export function ResultsDisplay(props: SearchResultsProps) {
@@ -64,14 +65,15 @@ export function ResultsDisplay(props: SearchResultsProps) {
 
                 props.addFilter({
                     'type': 'tag',
-                    'value': href.value
+                    'value': href.value,
+                    reversed: false,
                 })
             }
         }
     }
 
     const resultItems = props.results.slice(0, numberResultsShown).map(r => <div className='desk__search-result' key={r.path}>
-        <NoteCard title={r.title} path={r.path} folder={r.folder} backlinks={r.backlinks} date={r.mtime} />
+        <NoteCard title={r.title} path={r.path} folder={r.folder} backlinks={r.backlinks} date={r.mtime} setFilters={(filters) => {props.setFilters(filters)}} />
     </div>)
 
     return <div>
