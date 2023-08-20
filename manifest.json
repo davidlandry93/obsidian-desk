@@ -1,7 +1,7 @@
 {
-	"id": "obsidian-desk",
+	"id": "desk",
 	"name": "Desk for Obsidian",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"minAppVersion": "0.15.0",
 	"description": "A desk to see notes at a glance in Obsidian.",
 	"author": "David Landry",
