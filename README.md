@@ -1,6 +1,6 @@
 # Desk for Obsidian
 
-**Desk for Obsidian** is an Obsidian plugin that lets you
+**Desk for Obsidian** is an [Obsidian](https://obsidian.md) plugin that lets you
 choose some of your notes and see them together, at a glance.
 The notes are laid down in a 4x6 aspect ratio which is 
 typically used in analog Zettelkasten systems. 
@@ -11,16 +11,16 @@ The inspiration for this plugin is to emulate picking up the cards for a particu
 ## Installation
 
 This plugin requires the [Obsidian Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin to be installed. 
-Also, the **Enable Javascript Queries** option must be enable in Dataview.
+The **Enable Javascript Queries** option must be enabled for Dataview.
 
 ## Usage
 
-When enabled, the plugin adds a desk lamp icon in the left ribbon.
+Once enabled, the plugin adds a desk lamp icon in the left ribbon.
 Click on the icon to open a new desk.
 Alternatively, use the *Create new desk* command from the command palette to create a new desk.
 
 Type in the search box to browse through your available filters.
-Desk for Obsidian can filter you notes by outgoing links, incoming links, string, and tag. 
+Desk for Obsidian can filter you notes by outgoing links, incoming links, string, tag and directories. 
 You can make a exclusion filter by clicking on a filter after it was added.
 
 Click on a note card to expand it and see the full note.
