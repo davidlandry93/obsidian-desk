@@ -3,9 +3,9 @@
 	"name": "Desk for Obsidian",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "A desk to visualize multiple notes at once in Obsidian.",
+	"description": "A desk to see notes at a glance in Obsidian.",
 	"author": "David Landry",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"authorUrl": "https://blog.dlandry.xyz",
+	"fundingUrl": "https://ko-fi.com/davidlandry",
 	"isDesktopOnly": true
 }
