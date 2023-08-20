@@ -1,4 +1,3 @@
-
 .desk_root {
     position: relative;
 }
@@ -57,12 +56,12 @@
 .desk__note-card-footer {
     color: var(--text-faint);
     margin-top: var(--size-4-2);
-    margin-bottom: var(--size-4-4);    
+    margin-bottom: var(--size-4-4);
     position: absolute;
     bottom: 0;
 }
 
-.desk__note-card-footer > span {
+.desk__note-card-footer>span {
     margin-right: var(--size-4-2)
 }
 
@@ -109,6 +108,7 @@
     flex-wrap: wrap;
     padding: var(--size-4-1) var(--size-4-2);
     border-radius: var(--input-radius);
+    vertical-align: middle;
 }
 
 .desk__search-box-chip-container {
@@ -122,7 +122,7 @@
     padding: 0;
 }
 
-.desk__dropdown-list-item > a {
+.desk__dropdown-list-item>a {
     color: var(--text-normal);
     text-decoration: none;
     display: block;
@@ -141,11 +141,13 @@ span.desk__chip {
     font-size: var(--tag-size);
     font-weight: bold;
     background-color: var(--tag-background);
-    padding: var(--tag-padding-y) var(--tag-padding-x);
+    padding: 0 var(--tag-padding-x);
     border: var(--tag-border-width) solid var(--tag-border-color);
     border-radius: var(--tag-radius);
     display: inline-block;
-    margin: 0 var(--size-4-1) var(--size-4-1) 0;
+    margin: 0 var(--size-4-1) 0 0;
+    line-height: var(--input-height);
+    row-gap: var(--size-4-1);
 }
 
 span.desk__chip.reversed {
@@ -173,6 +175,8 @@ span.desk__chip .desk__chip-icon {
     height: var(--tag-size);
 }
 
+div.desk__sort-chip-container {}
+
 .desk__chip-delete-icon {
     border-left: 1px solid var(--tag-border-color-hover)
 }
@@ -192,9 +196,9 @@ span.desk__chip .desk__chip-icon {
     z-index: 1;
 }
 
-.desk__dropdown::-webkit-scrollbar{
+.desk__dropdown::-webkit-scrollbar {
     display: none;
-  }
+}
 
 
 
@@ -205,10 +209,6 @@ span.desk__chip .desk__chip-icon {
 
 .view-content:has(div.desk__root) {
     padding: 0;
-}
-
-div.desk__sort-chip-container {
-
 }
 
 div.desk__sort-chip-dropdown {
@@ -224,4 +224,3 @@ div.desk__sort-chip-dropdown {
 .desk__results-bottom-sensor {
     height: 10px;
 }
-

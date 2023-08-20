@@ -144,18 +144,13 @@ export function DeskComponent() {
     }
 
     function onRemoveFilter(index: number) {
-        console.log("On Remove Filter")
         const newFilterList = state.filters.slice()
         newFilterList.splice(index, 1)
-
-        console.log("From", state.filters, "to", newFilterList)
 
         const newState = {
             ...state,
             filters: newFilterList,
         }
-
-        console.log(newState)
 
         setState(newState)
     }
@@ -177,8 +172,6 @@ export function DeskComponent() {
 
     function generateResults(): SearchResult[] {
         const dv = getDataviewAPI(app)
-
-        console.log(state.filters)
         const dataviewQuery = filtersToDataviewQuery(state.filters.filter(f => f.type != "text"))
 
         const sorters: { [key: string]: (a: SearchResult, b: SearchResult) => number } = {
@@ -221,9 +214,6 @@ export function DeskComponent() {
 
     return <div className="desk__root">
         <div className='desk__search-menu'>
-            <div className='desk__text-search-input-container'>
-                <input type="text" placeholder='Search text' />
-            </div>
             <FilterMenu
                 filters={state.filters}
                 suggestions={suggestions}

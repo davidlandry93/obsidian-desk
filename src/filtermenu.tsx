@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Filter, keyOfFilter, filterEqual } from './filter'
 import { FilterChip } from './filterchip'
 import { SortChip } from './sortchip'
-import { ListFilter } from 'lucide-react'
+import { LampDesk } from 'lucide-react'
 import { MaybeSortOption } from './sortchip'
 
 const MAX_SUGGESTIONS = 50
@@ -20,7 +20,8 @@ interface FilterMenuProps {
 
 export function FilterMenu(props: FilterMenuProps) {
     const [userInput, setUserInput] = useState('')
-    const [showSuggestions, setShowSuggestions] = useState(false)
+    const [showSuggestionsMenu, setShowSuggestionsMenu] = useState(false)
+    const [showSuggestionsSpinner, setShowSuggestionsSpinner] = useState(true);
     const [filteredSuggestions, setFilteredSuggestions] = useState(props.suggestions)
     const [selectedSuggestion, setSelectedSuggestion] = useState(0)
     const textInputRef = useRef<HTMLInputElement>(null)
@@ -33,28 +34,49 @@ export function FilterMenu(props: FilterMenuProps) {
         setFilters(props.filters)
     }, [props.filters])
 
-    function onTextChange(e: ChangeEvent<HTMLInputElement>) {
-        setUserInput(e.target.value)
-        setShowSuggestions(e.target.value !== "")
+    useEffect(() => {
+        if (userInput !== "") {
+            const timeout = setTimeout(() => {
+                const suggestions = makeSuggestions(userInput)
+                setFilteredSuggestions(suggestions)
+                setShowSuggestionsSpinner(false)
+            }, 300)
 
+            return () => {
+                clearTimeout(timeout)
+            }
+        }
+    }, [userInput])
+
+    function onTextChange(e: ChangeEvent<HTMLInputElement>) {
+
+        setShowSuggestionsSpinner(true)
+        setUserInput(e.target.value)
+
+        if (e.target.value === "") {
+            setShowSuggestionsMenu(false)
+        } else {
+            setShowSuggestionsMenu(true)
+        }
+    }
+
+    function makeSuggestions(filterText: string) {
         const textSuggestion: Filter = {
             type: "text",
-            value: e.target.value,
+            value: filterText,
             reversed: false,
         }
 
-        const otherSuggestions = props.suggestions.filter(s => s.value.toLowerCase().contains(e.target.value.toLowerCase()) && !filters.some((a) => filterEqual(a, s)))
+        const otherSuggestions = props.suggestions.filter(s => s.value.toLowerCase().contains(filterText.toLowerCase()) && !filters.some((a) => filterEqual(a, s)))
 
-        setFilteredSuggestions(
-            [textSuggestion, ...otherSuggestions]
-        )
+        return [textSuggestion, ...otherSuggestions]
     }
 
     function addSuggestion(f: Filter) {
         props.addFilter(f)
 
         setUserInput('')
-        setShowSuggestions(false)
+        setShowSuggestionsMenu(false)
 
         if (textInputRef.current) {
             textInputRef.current.focus()
@@ -78,9 +100,9 @@ export function FilterMenu(props: FilterMenuProps) {
             addSuggestion(filteredSuggestions[selectedSuggestion])
         }
 
-        if (e.key === "Escape" && showSuggestions) {
-            if (showSuggestions) {
-                setShowSuggestions(false)
+        if (e.key === "Escape" && showSuggestionsMenu) {
+            if (showSuggestionsMenu) {
+                setShowSuggestionsMenu(false)
                 e.stopPropagation()
             }
         }
@@ -145,12 +167,12 @@ export function FilterMenu(props: FilterMenuProps) {
     </div>
 
     const suggestionContents = <div className='desk__dropdown'>
-        {suggestionList}
+        {showSuggestionsSpinner ? "Generating suggestions..." : suggestionList}
     </div>
 
     return (
         <div className='desk__filter-menu'>
-            <ListFilter className='list-filter-icon' />
+            <LampDesk className='list-filter-icon' />
             <div className={`desk__autocomplete-search-box-container`}>
                 <SortChip onChange={(s) => { props.onSortChange(s) }} sort={props.sort} />
                 {chips}
@@ -162,7 +184,7 @@ export function FilterMenu(props: FilterMenuProps) {
                         onChange={onTextChange}
                         placeholder='Filter by tag, link...'
                         ref={textInputRef} ></input>
-                    {showSuggestions ? suggestionContents : null}
+                    {showSuggestionsMenu ? suggestionContents : null}
                 </div>
             </div>
         </div>
