@@ -12,15 +12,16 @@
     "importHelpers": true,
     "isolatedModules": true,
     "jsx": "react",
-    "strictNullChecks": true,
-      "lib": [
-        "DOM",
-        "ES5",
-        "ES6",
-        "ES7"
-      ]
+    "strictNullChecks": false,
+    "lib": [
+      "DOM",
+      "ES5",
+      "ES6",
+      "ES7"
+    ]
   },
   "include": [
-    "**/*.ts"
-, "deskview.tsx"  ]
+    "**/*.ts",
+    "deskview.tsx"
+  ]
 }
