@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import React, { useState, useEffect } from 'react'
 import { produce } from 'immer'
 import { getDataviewAPI } from './dataview'
 
@@ -16,7 +16,7 @@ import { DataviewFile } from './dataview'
 
 function getTagSuggestions(): Filter[] {
     const metadataCache = getMetadataCache(app)
-    return Object.keys(metadataCache.getTags()).map((t) => {return {type: "tag", value: t, key: t, reversed: false}})
+    return Object.keys(metadataCache.getTags()).map((t) => { return { type: "tag", value: t, key: t, reversed: false } })
 }
 
 function getFolderSuggestions(): BasicFilter[] {
@@ -34,8 +34,8 @@ function getFolderSuggestions(): BasicFilter[] {
 function getLinkSuggestions(): LinkFilter[] {
     const metadataCache = app.metadataCache as ExtendedMetadataCache
 
-    return metadataCache.getLinkSuggestions().map((s: any) =>{
-        const filter: LinkFilter = {type: "link", value: s.path, exists: s.file !== null, reversed: false}
+    return metadataCache.getLinkSuggestions().map((s: any) => {
+        const filter: LinkFilter = { type: "link", value: s.path, exists: s.file !== null, reversed: false }
 
         if ('alias' in s) {
             filter.alias = s.alias
@@ -63,9 +63,9 @@ function getBacklinkSuggestions(): BasicFilter[] {
 
 function getAllSuggestions(): Filter[] {
     const suggestions = [
-        ...getTagSuggestions(), 
-        ...getLinkSuggestions(), 
-        ...getFolderSuggestions(), 
+        ...getTagSuggestions(),
+        ...getLinkSuggestions(),
+        ...getFolderSuggestions(),
         ...getBacklinkSuggestions(),
     ]
 
@@ -126,10 +126,10 @@ export function DeskComponent() {
     function onAddFilter(filter: Filter) {
         if (!state.filters.some(f => filterEqual(filter, f))) {
             const newState = {
-                ...state, 
+                ...state,
                 filters: [...state.filters, filter],
             }
-    
+
             setState(newState)
         }
     }
@@ -164,7 +164,7 @@ export function DeskComponent() {
         const newFilters = state.filters.slice()
 
         const filterIndex = state.filters.indexOf(filter)
-        newFilters[filterIndex]= {
+        newFilters[filterIndex] = {
             ...filter,
             reversed: !filter.reversed
         }
@@ -181,7 +181,7 @@ export function DeskComponent() {
         console.log(state.filters)
         const dataviewQuery = filtersToDataviewQuery(state.filters.filter(f => f.type != "text"))
 
-        const sorters: { [key: string]: (a: SearchResult, b: SearchResult) => number} = {
+        const sorters: { [key: string]: (a: SearchResult, b: SearchResult) => number } = {
             "modified_date": (a: SearchResult, b: SearchResult) => a.mtime.toMillis() - b.mtime.toMillis(),
             "name": (a: SearchResult, b: SearchResult) => a.title.localeCompare(b.title),
             "size": (a: SearchResult, b: SearchResult) => a.size - b.size,
@@ -191,9 +191,9 @@ export function DeskComponent() {
         const sortFunction = state.sort ? sorters[state.sort.type] : sorters["modified_date"]
         const reversedSortFunction = state.sort && state.sort.reverse ? (a: SearchResult, b: SearchResult) => sortFunction(b, a) : sortFunction
 
-        const pages: {file: DataviewFile}[] = dv.pages(dataviewQuery).values
+        const pages: { file: DataviewFile }[] = dv.pages(dataviewQuery).values
 
-        const results = pages.map((p: any) =>{
+        const results = pages.map((p: any) => {
             return dataviewFileToSearchResult(p.file)
         }).sort(reversedSortFunction)
 
@@ -224,18 +224,18 @@ export function DeskComponent() {
             <div className='desk__text-search-input-container'>
                 <input type="text" placeholder='Search text' />
             </div>
-            <FilterMenu 
+            <FilterMenu
                 filters={state.filters}
                 suggestions={suggestions}
                 sort={state.sort}
                 onSortChange={(sortOption) => onSortChange(sortOption)}
-                addFilter={(f) => { onAddFilter(f)}}
+                addFilter={(f) => { onAddFilter(f) }}
                 removeFilter={(i: number) => { onRemoveFilter(i) }}
                 reverseFilter={(f) => { reverseFilter(f) }} />
         </div>
-        <ResultsDisplay 
-            results={searchResults} 
-            addFilter={(f) => { onAddFilter(f)}}
+        <ResultsDisplay
+            results={searchResults}
+            addFilter={(f) => { onAddFilter(f) }}
             setFilters={(f) => { onSetFilters(f) }} />
     </div>
 }

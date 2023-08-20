@@ -4,7 +4,7 @@ import { Filter, keyOfFilter, filterEqual } from './filter'
 import { FilterChip } from './filterchip'
 import { SortChip } from './sortchip'
 import { ListFilter } from 'lucide-react'
-import {MaybeSortOption} from './sortchip'
+import { MaybeSortOption } from './sortchip'
 
 const MAX_SUGGESTIONS = 50
 
@@ -35,7 +35,7 @@ export function FilterMenu(props: FilterMenuProps) {
 
     function onTextChange(e: ChangeEvent<HTMLInputElement>) {
         setUserInput(e.target.value)
-        setShowSuggestions(true)
+        setShowSuggestions(e.target.value !== "")
 
         const textSuggestion: Filter = {
             type: "text",
@@ -43,17 +43,11 @@ export function FilterMenu(props: FilterMenuProps) {
             reversed: false,
         }
 
-        const otherSuggestions =  props.suggestions.filter(s => s.value.toLowerCase().contains(e.target.value.toLowerCase()) && !filters.some((a) => filterEqual(a, s)))
+        const otherSuggestions = props.suggestions.filter(s => s.value.toLowerCase().contains(e.target.value.toLowerCase()) && !filters.some((a) => filterEqual(a, s)))
 
-        if(e.target.value !== "") {
-            setFilteredSuggestions(
-                [textSuggestion, ...otherSuggestions]
-             )
-        } else {
-            setFilteredSuggestions(
-                [...otherSuggestions]
-             )           
-        }
+        setFilteredSuggestions(
+            [textSuggestion, ...otherSuggestions]
+        )
     }
 
     function addSuggestion(f: Filter) {
@@ -62,7 +56,7 @@ export function FilterMenu(props: FilterMenuProps) {
         setUserInput('')
         setShowSuggestions(false)
 
-        if(textInputRef.current) {
+        if (textInputRef.current) {
             textInputRef.current.focus()
         }
     }
@@ -76,12 +70,27 @@ export function FilterMenu(props: FilterMenuProps) {
     }
 
     const onKeyDown = (e: KeyboardEvent) => {
-        if(userInput.length === 0 && e.key === "Backspace" && e.target === textInputRef.current && filters.length > 0) {
+        if (userInput.length === 0 && e.key === "Backspace" && e.target === textInputRef.current && filters.length > 0) {
             props.removeFilter(-1)
         }
 
-        if(e.key === "Enter" && e.target === textInputRef.current) {
+        if (e.key === "Enter" && e.target === textInputRef.current) {
             addSuggestion(filteredSuggestions[selectedSuggestion])
+        }
+
+        if (e.key === "Escape" && showSuggestions) {
+            if (showSuggestions) {
+                setShowSuggestions(false)
+                e.stopPropagation()
+            }
+        }
+
+        if (e.key === "ArrowDown") {
+            setSelectedSuggestion(Math.min(filteredSuggestions.length - 1, selectedSuggestion + 1))
+        }
+
+        if (e.key === "ArrowUp") {
+            setSelectedSuggestion(Math.max(0, selectedSuggestion - 1))
         }
 
         return false
@@ -91,10 +100,10 @@ export function FilterMenu(props: FilterMenuProps) {
         if (textInputRef.current) {
             textInputRef.current.addEventListener('keydown', onKeyDown)
         }
-        
-        return () => { 
-            if(textInputRef.current) {
-                textInputRef.current.removeEventListener('keydown',onKeyDown) 
+
+        return () => {
+            if (textInputRef.current) {
+                textInputRef.current.removeEventListener('keydown', onKeyDown)
             }
         }
     })
@@ -110,23 +119,23 @@ export function FilterMenu(props: FilterMenuProps) {
             return <span>Is linked by <FilterChip filter={filter} closeable={false} /></span>
         } else if (filter.type === "text") {
             return <span>Contains text <FilterChip filter={filter} closeable={false}></FilterChip></span>
-        } else { 
+        } else {
             throw new Error("Unknown filter type when generating description text.")
         }
     }
 
 
-    const suggestionComponents = filteredSuggestions.slice(0, MAX_SUGGESTIONS).map((suggestion, index) => { 
+    const suggestionComponents = filteredSuggestions.slice(0, MAX_SUGGESTIONS).map((suggestion, index) => {
         return <li key={keyOfFilter(suggestion)} className={`desk__dropdown-list-item`}>
-            <a 
-            className={`${index === selectedSuggestion ? 'selected' : ''}`}
-            onClick={() => {addSuggestion(suggestion)}}
-            onMouseEnter={() => {selectSuggestion(index)}}
+            <a
+                className={`${index === selectedSuggestion ? 'selected' : ''}`}
+                onClick={() => { addSuggestion(suggestion) }}
+                onMouseEnter={() => { selectSuggestion(index) }}
             >{suggestionDescription(suggestion)}</a>
         </li>
     })
 
-    const chips = filters.map((f, i) =>{
+    const chips = filters.map((f, i) => {
         return <FilterChip filter={f} onClick={() => props.reverseFilter(f)} key={keyOfFilter(f)} closeable={true} onClose={() => removeChip(i)} />
     })
 
@@ -143,17 +152,17 @@ export function FilterMenu(props: FilterMenuProps) {
         <div className='desk__filter-menu'>
             <ListFilter className='list-filter-icon' />
             <div className={`desk__autocomplete-search-box-container`}>
-                <SortChip onChange={(s) => {props.onSortChange(s)}} sort={props.sort}/>
+                <SortChip onChange={(s) => { props.onSortChange(s) }} sort={props.sort} />
                 {chips}
                 <div className='desk__filter-search-container'>
-                    <input 
-                        className='desk__search-box-container-input' 
-                        type="text" 
-                        value={userInput} 
+                    <input
+                        className='desk__search-box-container-input'
+                        type="text"
+                        value={userInput}
                         onChange={onTextChange}
                         placeholder='Filter by tag, link...'
                         ref={textInputRef} ></input>
-                    { showSuggestions ? suggestionContents : null}
+                    {showSuggestions ? suggestionContents : null}
                 </div>
             </div>
         </div>
