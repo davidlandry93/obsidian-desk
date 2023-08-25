@@ -1,7 +1,6 @@
 import { Plugin } from 'obsidian';
 
 import { DeskView, VIEW_TYPE_DESK } from 'deskview';
-import { ExtendedMetadataCache } from 'src/obsidianprivate';
 
 // Remember to rename these classes and interfaces!
 
@@ -33,10 +32,7 @@ export default class DeskPlugin extends Plugin {
 		})
 
 		this.registerView(VIEW_TYPE_DESK, (leaf) => {
-			return new DeskView(
-				leaf,
-				this.app.vault,
-				this.app.metadataCache as ExtendedMetadataCache)
+			return new DeskView(leaf, this.app)
 		});
 	}
 

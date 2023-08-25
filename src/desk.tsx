@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { produce } from 'immer'
 import { getDataviewAPI } from './dataview'
 
@@ -10,16 +10,17 @@ import { SearchResult, dataviewFileToSearchResult } from './domain/searchresult'
 import { MaybeSortOption } from './sortchip'
 import { ExtendedMetadataCache } from 'src/obsidianprivate'
 import { getMetadataCache } from './obsidian'
-import { TFile } from 'obsidian'
+import { TFile, App } from 'obsidian'
 import { DataviewFile } from './dataview'
+import { ObsidianContext } from './obsidiancontext'
 
 
-function getTagSuggestions(): Filter[] {
+function getTagSuggestions(app: App): Filter[] {
     const metadataCache = getMetadataCache(app)
     return Object.keys(metadataCache.getTags()).map((t) => { return { type: "tag", value: t, key: t, reversed: false } })
 }
 
-function getFolderSuggestions(): BasicFilter[] {
+function getFolderSuggestions(app: App): BasicFilter[] {
     const folderPaths = app.vault.getAllLoadedFiles().filter(f => ('children' in f) && f.path !== '/').map(f => f.path)
     return folderPaths.map((p) => {
         return {
@@ -31,7 +32,7 @@ function getFolderSuggestions(): BasicFilter[] {
     })
 }
 
-function getLinkSuggestions(): LinkFilter[] {
+function getLinkSuggestions(app: App): LinkFilter[] {
     const metadataCache = app.metadataCache as ExtendedMetadataCache
 
     return metadataCache.getLinkSuggestions().map((s: any) => {
@@ -45,7 +46,7 @@ function getLinkSuggestions(): LinkFilter[] {
     })
 }
 
-function getBacklinkSuggestions(): BasicFilter[] {
+function getBacklinkSuggestions(app: App): BasicFilter[] {
     const dv = getDataviewAPI(app)
 
     const allPages = dv.pages('""').values
@@ -61,12 +62,12 @@ function getBacklinkSuggestions(): BasicFilter[] {
 }
 
 
-function getAllSuggestions(): Filter[] {
+function getAllSuggestions(app: App): Filter[] {
     const suggestions = [
-        ...getTagSuggestions(),
-        ...getLinkSuggestions(),
-        ...getFolderSuggestions(),
-        ...getBacklinkSuggestions(),
+        ...getTagSuggestions(app),
+        ...getLinkSuggestions(app),
+        ...getFolderSuggestions(app),
+        ...getBacklinkSuggestions(app),
     ]
 
     const suggestionOrder = (a: Filter, b: Filter) => {
@@ -88,7 +89,9 @@ export function DeskComponent() {
         sort: null,
     })
 
-    const [suggestions, setSuggestions] = useState<Filter[]>(getAllSuggestions())
+    const app = useContext(ObsidianContext)
+
+    const [suggestions, setSuggestions] = useState<Filter[]>(getAllSuggestions(app))
 
     // Was not intended to be set directly. The idea is to set the filters and the sort.
     // Then, the effect listening on state should update the search result list.
@@ -97,7 +100,7 @@ export function DeskComponent() {
 
     useEffect(() => {
         const createListenerEventRef = app.vault.on('create', () => {
-            setSuggestions(getAllSuggestions())
+            setSuggestions(getAllSuggestions(app))
         })
 
         return () => {

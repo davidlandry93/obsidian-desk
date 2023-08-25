@@ -1,9 +1,10 @@
-import React, {useState, useRef, useEffect, MouseEvent} from 'react'
+import React, { useState, useRef, useEffect, MouseEvent, useContext } from 'react'
 import { TFile } from 'obsidian'
 
 import { NoteCard } from './notecard'
 import { SearchResult } from './domain/searchresult'
 import { Filter } from './filter'
+import { ObsidianContext } from './obsidiancontext'
 
 const RESULTS_BATCH_SIZE = 20
 
@@ -14,6 +15,7 @@ interface SearchResultsProps {
 }
 
 export function ResultsDisplay(props: SearchResultsProps) {
+    const app = useContext(ObsidianContext)
     const numberResults = props.results.length
     const [numberResultsShown, setNumberResultsShown] = useState(Math.min(RESULTS_BATCH_SIZE, props.results.length))
     const resultDisplayRef = useRef(null)
@@ -57,11 +59,11 @@ export function ResultsDisplay(props: SearchResultsProps) {
                         app.workspace.getLeaf('tab').openFile(note)
                     }
                 }
-            } else if (target.classList.contains('tag'))  {
+            } else if (target.classList.contains('tag')) {
                 // Clicked on tag. Add tag to filters.
                 e.stopPropagation()
 
-                const href = target.attributes.getNamedItem("href") as {value: string}
+                const href = target.attributes.getNamedItem("href") as { value: string }
 
                 props.addFilter({
                     'type': 'tag',
@@ -73,7 +75,7 @@ export function ResultsDisplay(props: SearchResultsProps) {
     }
 
     const resultItems = props.results.slice(0, numberResultsShown).map(r => <div className='desk__search-result' key={r.path}>
-        <NoteCard title={r.title} path={r.path} folder={r.folder} backlinks={r.backlinks} date={r.mtime} setFilters={(filters) => {props.setFilters(filters)}} />
+        <NoteCard title={r.title} path={r.path} folder={r.folder} backlinks={r.backlinks} date={r.mtime} setFilters={(filters) => { props.setFilters(filters) }} />
     </div>)
 
     return <div>

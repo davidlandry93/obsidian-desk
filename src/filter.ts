@@ -1,6 +1,6 @@
 import equal from 'deep-equal'
 import { DataviewFile } from './dataview'
-import { TFile } from 'obsidian'
+import { TFile, App } from 'obsidian'
 
 
 export interface BasicFilter {
@@ -38,12 +38,12 @@ function filterToQueryTerm(filter: Filter): string {
         baseString = "\"" + filter.value + "\""
     } else if (filter.type === "backlink") {
         baseString = `outgoing([[${filter.value}]])`
-    } else if (filter.type === "text"){
+    } else if (filter.type === "text") {
         throw new Error("Text filters should not be included in dataview queries")
     } else {
         throw new Error("Unhandled filter type")
     }
-    
+
     if (filter.reversed) {
         baseString = "!" + baseString
     }
@@ -79,22 +79,6 @@ export function filterEqual(a: Filter, b: Filter) {
     return equal(a, b)
 }
 
-
-export async function fileMatchesFilter(file: DataviewFile, filter: Filter): Promise<boolean> {
-    if (filter.type === "text") {
-        const fileHandle = app.vault.getAbstractFileByPath(file.path)
-
-        if (fileHandle instanceof TFile) {
-            const fileContent = await app.vault.cachedRead(fileHandle)
-
-            return fileContentMatchesTextFilter(fileContent, filter)
-        } else {
-            throw new Error("Unexpected type of FileHandle")
-        }
-    } else {
-        throw new Error(`Filter of type ${filter.type} should not be applied directly to file, but done with dataview instead.`)
-    }
-}
 
 export function fileContentMatchesTextFilter(fileContent: string, filter: TextFilter): boolean {
     return fileContent.toLowerCase().contains(filter.value.toLowerCase())

@@ -37,7 +37,6 @@ export function NoteCard(props: NoteCardProps) {
         const container = contentRef.current
 
         if (container !== null) {
-            container.innerHTML = ''
             MarkdownRenderer.renderMarkdown(body, container, props.path, null).then(() => {
                 checkOverflow(container)
             })
