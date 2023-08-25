@@ -1,10 +1,10 @@
 {
 	"id": "desk",
 	"name": "Desk for Obsidian",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"minAppVersion": "0.15.0",
 	"description": "A desk to see notes at a glance in Obsidian. Requires Dataview as a dependency.",
-	"author": "David Landry",
+	"author": "David Landry <davidlandry93@gmail.com>",
 	"authorUrl": "https://blog.dlandry.xyz",
 	"fundingUrl": "https://ko-fi.com/davidlandry",
 	"isDesktopOnly": true
