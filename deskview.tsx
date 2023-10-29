@@ -22,6 +22,10 @@ export class DeskView extends ItemView {
     this.metadataCache = app.metadataCache as ExtendedMetadataCache
   }
 
+  escapeHandler = () => {
+    // Do nothing.
+  }
+
   getViewType() {
     return VIEW_TYPE_DESK;
   }
@@ -30,7 +34,9 @@ export class DeskView extends ItemView {
     return "Desk";
   }
 
-  async onOpen() {
+  onOpen = async () => {
+    this.app.scope.register([], 'Escape', this.escapeHandler);
+
     const container = this.containerEl.children[1];
 
     this.root = createRoot(container)
@@ -43,7 +49,7 @@ export class DeskView extends ItemView {
     )
   }
 
-  async onClose() {
-    this.root.unmount()
+  onClose = async () => {
+    if (this.root) this.root.unmount()
   }
 }

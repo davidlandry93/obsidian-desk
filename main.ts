@@ -15,11 +15,6 @@ export default class DeskPlugin extends Plugin {
 			this.activateView();
 		});
 
-		this.registerDomEvent(document, 'keyup', (evt: KeyboardEvent) => {
-			if (evt.key === "Escape") {
-				evt.stopPropagation()
-			}
-		})
 
 		this.addCommand({
 			id: "create-desk",
@@ -39,12 +34,19 @@ export default class DeskPlugin extends Plugin {
 	}
 
 	async activateView() {
-		const leaf = this.app.workspace.getLeaf(true)
+		let leaf = undefined
 
-		leaf.setViewState({
-			type: VIEW_TYPE_DESK,
-			active: true,
-		});
+		const leavesOfType = this.app.workspace.getLeavesOfType(VIEW_TYPE_DESK)
+
+		if (leavesOfType.length == 0) {
+			leaf = this.app.workspace.getLeaf(true)
+			leaf.setViewState({
+				type: VIEW_TYPE_DESK,
+				active: true,
+			});
+		} else {
+			leaf = leavesOfType[0]
+		}
 
 		this.app.workspace.revealLeaf(leaf);
 	}
