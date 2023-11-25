@@ -33,7 +33,9 @@ export class DeskView extends ItemView {
   }
 
   onOpen = async () => {
-    this.escapeHandler = this.app.scope.register([], 'Escape', () => { });
+    console.log("View object", this)
+    //@ts-ignore
+    this.escapeHandler = this.scope.register([], 'Escape', () => { });
 
     const container = this.containerEl.children[1];
 
@@ -49,6 +51,5 @@ export class DeskView extends ItemView {
 
   onClose = async () => {
     if (this.root) this.root.unmount()
-    if (this.escapeHandler) this.app.scope.unregister(this.escapeHandler)
   }
 }
