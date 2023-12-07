@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Vault, App, KeymapEventHandler } from "obsidian"
+import { ItemView, WorkspaceLeaf, Vault, App, KeymapEventHandler, Scope } from "obsidian"
 import { ExtendedMetadataCache } from "src/obsidianprivate"
 import * as React from "react"
 import { createRoot, Root } from "react-dom/client"
@@ -15,6 +15,7 @@ export class DeskView extends ItemView {
   results: Array<string>
   root: Root
   escapeHandler: KeymapEventHandler | null
+  scope: Scope
 
   constructor(leaf: WorkspaceLeaf, app: App) {
     super(leaf);
@@ -22,6 +23,9 @@ export class DeskView extends ItemView {
     this.vault = app.vault
     this.metadataCache = app.metadataCache as ExtendedMetadataCache
     this.escapeHandler = null
+
+
+    this.scope = new Scope(this.app.scope);
   }
 
   getViewType() {
@@ -33,7 +37,9 @@ export class DeskView extends ItemView {
   }
 
   onOpen = async () => {
-    this.escapeHandler = this.app.scope.register([], 'Escape', () => { });
+    //@ts-ignore
+    // Handle escape so that I can implement my own behavior later.
+    this.escapeHandler = this.scope.register([], 'Escape', () => { });
 
     const container = this.containerEl.children[1];
 
@@ -49,6 +55,5 @@ export class DeskView extends ItemView {
 
   onClose = async () => {
     if (this.root) this.root.unmount()
-    if (this.escapeHandler) this.app.scope.unregister(this.escapeHandler)
   }
 }
